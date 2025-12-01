@@ -3,6 +3,8 @@ from typing import cast
 from vflexctl.protocol import VFlexProto
 from vflexctl.types import MIDITriplet, VFlexProtoMessage
 
+__all__ = ["prepare_command_for_sending"]
+
 
 def midi_bytes_from_protocol_byte(protocol_byte: int) -> MIDITriplet:
     """

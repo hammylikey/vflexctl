@@ -1,3 +1,4 @@
 from .protocol import VFlexProto, protocol_message_from_midi_messages
+from .command_framing import prepare_command_frame
 
-__all__ = ["VFlexProto", "protocol_message_from_midi_messages"]
+__all__ = ["VFlexProto", "protocol_message_from_midi_messages", "prepare_command_frame"]

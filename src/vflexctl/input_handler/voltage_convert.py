@@ -21,9 +21,3 @@ def voltage_to_millivolt(voltage: float | int) -> int:
         raise TypeError("This function only accepts numbers.")
     rounded_voltage: float = round(float(voltage), 2)
     return int(floor(rounded_voltage * 1000))
-
-
-def millivolt_to_high_low_ints(value: int) -> tuple[int, int]:
-    high_byte = (value >> 8) & 0xFF
-    low_byte = value & 0xFF
-    return high_byte, low_byte

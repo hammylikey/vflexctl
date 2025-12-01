@@ -9,22 +9,25 @@ from mido.ports import BaseIOPort
 
 from vflexctl.command.led import set_led_state_command
 from vflexctl.command.voltage import set_voltage_command
-from vflexctl.device_interface.command_preparation import prepare_command_for_sending
-from vflexctl.device_interface.common_commands import (
-    GET_SERIAL_NUMBER_SEQUENCE,
-    GET_VOLTAGE_SEQUENCE,
+from vflexctl.device_interface import (
+    prepare_command_for_sending,
     GET_LED_STATE_SEQUENCE,
+    GET_VOLTAGE_SEQUENCE,
+    GET_SERIAL_NUMBER_SEQUENCE,
 )
 from vflexctl.exceptions import InvalidProtocolMessageLengthError, SerialNumberMismatchError
 from vflexctl.midi_transport.receivers import drain_incoming
 from vflexctl.midi_transport.senders import send_sequence
-from vflexctl.protocol import protocol_message_from_midi_messages
-from vflexctl.protocol.coders.led_state import protocol_decode_led_state
-from vflexctl.protocol.coders.serial_number import protocol_decode_serial_number
-from vflexctl.protocol.coders.voltage import get_millivolts_from_protocol_message
-from vflexctl.protocol.command_framing import prepare_command_frame
+from vflexctl.protocol import protocol_message_from_midi_messages, prepare_command_frame
+from vflexctl.protocol.coders import (
+    get_millivolts_from_protocol_message,
+    protocol_decode_led_state,
+    protocol_decode_serial_number,
+)
 
 DEFAULT_PORT_NAME = "Werewolf vFlex"
+
+__all__ = ["VFlex"]
 
 
 def run_with_handshake(func: Callable[..., Any]):
