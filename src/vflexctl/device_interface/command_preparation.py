@@ -1,9 +1,10 @@
 from typing import cast
 
 from vflexctl.protocol import VFlexProto
+from vflexctl.types import MIDITriplet, VFlexProtoMessage
 
 
-def midi_bytes_from_protocol_byte(protocol_byte: int) -> tuple[int, int, int]:
+def midi_bytes_from_protocol_byte(protocol_byte: int) -> MIDITriplet:
     """
     Takes a protocol byte (from a VFlex protocol message) and turns it into a MIDI
     message as bytes.
@@ -17,7 +18,7 @@ def midi_bytes_from_protocol_byte(protocol_byte: int) -> tuple[int, int, int]:
     )
 
 
-def prepare_command_for_sending(frames: list[list[int]] | list[int]) -> list[tuple[int, int, int]]:
+def prepare_command_for_sending(frames: list[VFlexProtoMessage] | VFlexProtoMessage) -> list[MIDITriplet]:
     """
     Prepares a command to be sent by MIDI, breaking up a command
     into a list of hex triplets to be sent across by MIDI.

@@ -1,5 +1,6 @@
 __all__ = ["protocol_encode_millivolts", "protocol_decode_millivolts"]
 
+from vflexctl.exceptions import InvalidProtocolMessageLengthError, IncorrectCommandByte
 from vflexctl.protocol import VFlexProto
 
 
@@ -37,8 +38,8 @@ def get_millivolts_from_protocol_message(protocol_message: list[int]) -> int:
     :param protocol_message: The protocol message to decode
     :return: The millivolts from the response
     """
-    if len(protocol_message) != 4 or protocol_message[1] != VFlexProto.CMD_VOLTAGE:
-        raise ValueError(
-            f"Unexpected protocol message. Expected command {VFlexProto.CMD_VOLTAGE}, got {protocol_message[1]}"
-        )
+    if len(protocol_message) != 4:
+        raise InvalidProtocolMessageLengthError(protocol_message, 4)
+    if protocol_message[1] != VFlexProto.CMD_GET_VOLTAGE:
+        raise IncorrectCommandByte(protocol_message, VFlexProto.CMD_GET_VOLTAGE)
     return protocol_decode_millivolts(protocol_message[2], protocol_message[3])

@@ -1,8 +1,7 @@
 from typing import Final
+from vflexctl.types import MIDITriplet
 
-__all__ = ["VFlexProto", "protocol_message_from_midi_messages", "MIDITriplet"]
-
-type MIDITriplet = tuple[int, int, int]
+__all__ = ["VFlexProto", "protocol_message_from_midi_messages"]
 
 
 class VFlexProto:
@@ -26,8 +25,11 @@ class VFlexProto:
     CMD_LED_STATE: Final = 0x0F  # 15
     """Protocol byte for the command to set the LED state."""
 
-    CMD_VOLTAGE: Final = 0x12  # 18
+    CMD_GET_VOLTAGE: Final = 0x12  # 18
     """Protocol byte for the command to get Voltage"""
+
+    CMD_SET_VOLTAGE: Final = CMD_GET_VOLTAGE | 0x80
+    """Protocol byte for the command to set the Voltage."""
 
 
 def is_control_frame(message: MIDITriplet) -> bool:
