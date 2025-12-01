@@ -17,9 +17,7 @@ def midi_bytes_from_protocol_byte(protocol_byte: int) -> tuple[int, int, int]:
     )
 
 
-def prepare_command_for_sending(
-        frames: list[list[int]] | list[int]
-) -> list[tuple[int, int, int]]:
+def prepare_command_for_sending(frames: list[list[int]] | list[int]) -> list[tuple[int, int, int]]:
     """
     Prepares a command to be sent by MIDI, breaking up a command
     into a list of hex triplets to be sent across by MIDI.
@@ -41,12 +39,9 @@ def prepare_command_for_sending(
     command.append(VFlexProto.COMMAND_END)
     return command
 
+
 def _split_to_triplets(command: list[int]) -> list[tuple[int, int, int]]:
     if len(command) % 3 != 0:
         raise ValueError("Command length must be multiple of 3")
 
-    return [
-        cast(tuple[int, int, int], tuple(command[i:i+3])) for i in range(0, len(command), 3)
-    ]
-
-
+    return [cast(tuple[int, int, int], tuple(command[i : i + 3])) for i in range(0, len(command), 3)]

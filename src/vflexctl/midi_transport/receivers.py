@@ -36,15 +36,5 @@ def drain_once(input_port: BaseInput) -> list[tuple[int, int, int]]:
     """
     drained_bytes: list[tuple[int, int, int]] = []
     for message in input_port.iter_pending():
-        drained_bytes.append(
-            cast(tuple[int, int, int], tuple(message.bytes()))
-        )
+        drained_bytes.append(cast(tuple[int, int, int], tuple(message.bytes())))
     return drained_bytes
-
-
-
-
-
-
-
-

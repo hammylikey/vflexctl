@@ -1,8 +1,10 @@
 from vflexctl.device_interface.common_commands import GET_VOLTAGE_COMMAND
 
+
 def guard_response(response: list[int], expected_command: list[int]):
-    if response[1:][:len(expected_command)] != expected_command:
+    if response[1:][: len(expected_command)] != expected_command:
         raise ValueError()
+
 
 def millivolts_from_get_voltage_response(response: list[int]) -> int:
     """

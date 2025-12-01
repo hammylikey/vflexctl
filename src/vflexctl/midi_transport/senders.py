@@ -9,6 +9,7 @@ DEFAULT_PAUSE_LENGTH = 0.002
 
 log = structlog.get_logger("vflexctl.midi_senders")
 
+
 def send_triplet(output: BaseOutput, triplet_data: tuple[int, int, int], *, pause=0.002):
     """
     Send a single 3-byte MIDI message

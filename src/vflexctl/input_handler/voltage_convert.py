@@ -2,6 +2,7 @@ from math import floor
 
 __all__ = ["voltage_to_millivolt"]
 
+
 def voltage_to_millivolt(voltage: float | int) -> int:
     """
     Takes in a number representing a voltage and converts it to millivolts.
@@ -19,7 +20,7 @@ def voltage_to_millivolt(voltage: float | int) -> int:
     if not isinstance(voltage, float | int):
         raise TypeError("This function only accepts numbers.")
     rounded_voltage: float = round(float(voltage), 2)
-    return int(floor(rounded_voltage*1000))
+    return int(floor(rounded_voltage * 1000))
 
 
 def millivolt_to_high_low_ints(value: int) -> tuple[int, int]:

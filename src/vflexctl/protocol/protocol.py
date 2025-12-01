@@ -4,6 +4,7 @@ __all__ = ["VFlexProto", "protocol_message_from_midi_messages", "MIDITriplet"]
 
 type MIDITriplet = tuple[int, int, int]
 
+
 class VFlexProto:
     """MIDI framing sentinels and transport status bytes used by the VFlex."""
 
@@ -19,13 +20,13 @@ class VFlexProto:
     MIDI_CLOCK_HEARTBEAT: Final = (0xF8,)
     """MIDI Clock command used as a heartbeat. The website sends this every ~6 seconds."""
 
-    CMD_GET_SERIAL_NUMBER: Final = 0x08 # 8
+    CMD_GET_SERIAL_NUMBER: Final = 0x08  # 8
     """Protocol byte for the command to get the Serial Number."""
 
-    CMD_LED_STATE: Final = 0x0F # 15
+    CMD_LED_STATE: Final = 0x0F  # 15
     """Protocol byte for the command to set the LED state."""
 
-    CMD_VOLTAGE: Final = 0x12 # 18
+    CMD_VOLTAGE: Final = 0x12  # 18
     """Protocol byte for the command to get Voltage"""
 
 

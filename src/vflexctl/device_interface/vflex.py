@@ -8,6 +8,7 @@ __all__ = []
 
 DEFAULT_PORT_NAME = "Werewolf vFLEX"
 
+
 def run_with_handshake(func: Callable[[...], Any]):
 
     @wraps(func)
@@ -18,7 +19,7 @@ def run_with_handshake(func: Callable[[...], Any]):
 class VFlex:
     io_port: BaseIOPort
     serial_number: str | None = None
-    current_voltage: int | None = None # Current voltage in mV
+    current_voltage: int | None = None  # Current voltage in mV
     led_state: int | None = None
 
     def __init__(self, io_port: BaseIOPort):
@@ -45,13 +46,7 @@ class VFlex:
         """
         return cls(mido.open_ioport(DEFAULT_PORT_NAME))
 
-    def wake_up(self) -> Self:
-        ...
+    def wake_up(self) -> Self: ...
 
     @run_with_handshake
-    def set_voltage(self, volts: float | int) -> None:
-        ...
-
-
-
-
+    def set_voltage(self, volts: float | int) -> None: ...

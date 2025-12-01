@@ -1,14 +1,8 @@
 import pytest
 from vflexctl.input_handler.voltage_convert import voltage_to_millivolt, millivolt_to_high_low_ints
 
-@pytest.mark.parametrize(
-    ["input_voltage", "expected_output_mv"], (
-            (12, 12000),
-            (12.0, 12000),
-            (5, 5000),
-            (5.5, 5500)
-    )
-)
+
+@pytest.mark.parametrize(["input_voltage", "expected_output_mv"], ((12, 12000), (12.0, 12000), (5, 5000), (5.5, 5500)))
 def test_voltage_to_millivolt(input_voltage, expected_output_mv):
     assert voltage_to_millivolt(input_voltage) == expected_output_mv
 

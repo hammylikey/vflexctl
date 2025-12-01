@@ -1,4 +1,3 @@
-
 __all__ = ["protocol_encode_millivolts", "protocol_decode_millivolts"]
 
 from vflexctl.protocol import VFlexProto
