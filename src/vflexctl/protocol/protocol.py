@@ -7,10 +7,10 @@ __all__ = ["VFlexProto", "protocol_message_from_midi_messages"]
 class VFlexProto:
     """MIDI framing sentinels and transport status bytes used by the VFlex."""
 
-    COMMAND_START: Final = (0x80, 0, 0)
+    COMMAND_START: Final[MIDITriplet] = (0x80, 0, 0)
     """Start-of-frame pseudo-SYSEX marker."""
 
-    COMMAND_END: Final = (0xA0, 0, 0)
+    COMMAND_END: Final[MIDITriplet] = (0xA0, 0, 0)
     """End-of-frame marker."""
 
     NOTE_STATUS: Final = 0x90

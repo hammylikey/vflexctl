@@ -1,4 +1,4 @@
-__all__ = ["protocol_encode_millivolts", "protocol_decode_millivolts"]
+__all__ = ["protocol_encode_millivolts", "protocol_decode_millivolts", "get_millivolts_from_protocol_message"]
 
 from vflexctl.exceptions import InvalidProtocolMessageLengthError, IncorrectCommandByte
 from vflexctl.protocol import VFlexProto

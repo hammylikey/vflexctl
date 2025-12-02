@@ -9,8 +9,7 @@ from mido.ports import BaseIOPort
 
 from vflexctl.command.led import set_led_state_command
 from vflexctl.command.voltage import set_voltage_command
-from vflexctl.device_interface import (
-    prepare_command_for_sending,
+from vflexctl.device_interface.common_sequences import (
     GET_LED_STATE_SEQUENCE,
     GET_VOLTAGE_SEQUENCE,
     GET_SERIAL_NUMBER_SEQUENCE,
@@ -18,7 +17,7 @@ from vflexctl.device_interface import (
 from vflexctl.exceptions import InvalidProtocolMessageLengthError, SerialNumberMismatchError
 from vflexctl.midi_transport.receivers import drain_incoming
 from vflexctl.midi_transport.senders import send_sequence
-from vflexctl.protocol import protocol_message_from_midi_messages, prepare_command_frame
+from vflexctl.protocol import protocol_message_from_midi_messages, prepare_command_frame, prepare_command_for_sending
 from vflexctl.protocol.coders import (
     get_millivolts_from_protocol_message,
     protocol_decode_led_state,
@@ -96,11 +95,14 @@ class VFlex:
         :return: Nothing, but ensures that the device is ready to receive commands.
         """
         self.get_serial_number()
+        self._initial_get_led_state()
         self._initial_get_voltage()
 
     def get_serial_number(self) -> None:
         """
-        Fetches (or re-fetches) the serial number of the connected VFlex.
+        Fetches (or re-fetches) the serial number of the connected VFlex. If the object is set to `safe_adjust`,
+        if the serial number changes between fetches, this **will** raise a SerialNumberMismatchError. This is
+        as a safety mechanism to make sure the same VFlex is still being connected to.
 
         :return: Nothing, but adds the serial number to the class if it's not there.
         :raises SerialNumberMismatchError: The serial number has changed between fetches.
@@ -132,12 +134,21 @@ class VFlex:
         """
         send_sequence(self.io_port, GET_VOLTAGE_SEQUENCE)
         returned_data = drain_incoming(self.io_port)
-        self.current_voltage = get_millivolts_from_protocol_message(protocol_message_from_midi_messages(returned_data))
+        if self.current_voltage is None:
+            self.current_voltage = get_millivolts_from_protocol_message(
+                protocol_message_from_midi_messages(returned_data)
+            )
 
     def _initial_get_led_state(self) -> None:
+        """
+        Initial get LED state command. This is used to wake the device up in wake_up. To actually get LED state, you
+        likely want to use `get_led_state()`. Instead.
+        :return:
+        """
         send_sequence(self.io_port, GET_LED_STATE_SEQUENCE)
         returned_data = drain_incoming(self.io_port)
-        self.led_state = protocol_decode_led_state(protocol_message_from_midi_messages(returned_data))
+        if self.led_state is None:
+            self.led_state = protocol_decode_led_state(protocol_message_from_midi_messages(returned_data))
 
     @run_with_handshake
     def get_voltage(self) -> int:
@@ -151,10 +162,35 @@ class VFlex:
         returned_data = drain_incoming(self.io_port)
         millivolts = get_millivolts_from_protocol_message(protocol_message_from_midi_messages(returned_data))
         self.current_voltage = millivolts
+        self.log.debug("Retrieved current voltage", current_voltage=self.current_voltage)
         return millivolts
 
     @run_with_handshake
+    def get_led_state(self) -> int:
+        """
+        Runs the "Get Led State" command on device to get the LED state. This both returns the value and adds it
+        to the object under `self.led_state`.
+        :return:
+        """
+        send_sequence(self.io_port, GET_LED_STATE_SEQUENCE)
+        returned_data = drain_incoming(self.io_port)
+        led_state = protocol_decode_led_state(protocol_message_from_midi_messages(returned_data))
+        self.log.debug("Retrieved LED State", led_state=led_state)
+        self.led_state = led_state
+        return led_state
+
+    @run_with_handshake
     def set_voltage(self, volts: int) -> None:
+        """
+        Set the voltage for the device to the specified number of millivolts. Updates the current voltage
+        with the data returned after the command.
+
+        The VFlex *should* return the new voltage, but if you wanted to be safer, run get_voltage() again
+        after this.
+
+        :param volts: The voltage to set the device to, in millivolts.
+        :return: Nothing, but updates the voltage for the object under self.current_voltage.
+        """
         command = prepare_command_for_sending(prepare_command_frame(set_voltage_command(volts)))
         send_sequence(self.io_port, command)
         returned_data = drain_incoming(self.io_port)
@@ -164,8 +200,22 @@ class VFlex:
 
     @run_with_handshake
     def set_led_state(self, led_state: bool | Literal[0, 1]) -> None:
+        """
+        Set the LED state for the device to the specified LED state. Updates the current LED state
+        with the data returned after the command.
+
+        The LED states are defined as:
+
+        - False, 0: LED is always on (0x00, default behaviour).
+        - True, 1: LED is not always on (0x01, customised behaviour).
+
+        :param led_state: The LED state to set the device to.
+        :return: Nothing, but updates the LED state for the object under self.current_led_state.
+        """
         command = prepare_command_for_sending(prepare_command_frame(set_led_state_command(led_state)))
         send_sequence(self.io_port, command)
-        returned_data = drain_incoming(self.io_port)
+        _ = drain_incoming(self.io_port)
         send_sequence(self.io_port, GET_LED_STATE_SEQUENCE)
+        returned_data = drain_incoming(self.io_port)
         self.led_state = protocol_decode_led_state(protocol_message_from_midi_messages(returned_data))
+        self.log.debug("LED State returned after setting", led_state=self.led_state)

@@ -14,3 +14,22 @@ def test_voltage_to_millivolt_can_still_work_with_string():
     of a valid number, but should be handled higher up.
     """
     assert voltage_to_millivolt("12.01") == 12010
+
+
+def test_voltage_to_millivolt_raises_when_string_is_not_a_number():
+    with pytest.raises(ValueError):
+        voltage_to_millivolt("hello")
+
+
+@pytest.mark.parametrize(
+    "bad_input",
+    [
+        print,
+        lambda x: None,
+        None,
+        ValueError(),
+    ],
+)
+def test_voltage_to_millivolts_raises_when_given_non_string_int_float_values(bad_input):
+    with pytest.raises(TypeError):
+        voltage_to_millivolt(bad_input)
