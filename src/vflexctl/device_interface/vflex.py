@@ -237,5 +237,5 @@ class VFlex:
             return None
         reported_current_voltage = self.get_voltage(update_self=False)
         if reported_current_voltage != self.current_voltage:
-            raise VoltageMismatchError(old_voltage=self.current_voltage, new_voltage=reported_current_voltage)
+            raise VoltageMismatchError(stored_voltage=self.current_voltage, retrieved_voltage=reported_current_voltage)
         return None

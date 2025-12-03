@@ -58,11 +58,16 @@ class SerialNumberMismatchError(UnsafeAdjustmentError):
 
 
 class VoltageMismatchError(UnsafeAdjustmentError):
-    def __init__(self, old_voltage: float | None = None, new_voltage: float | None = None):
+    stored_voltage: int | None = None
+    retrieved_voltage: int | None = None
+
+    def __init__(self, stored_voltage: int | None = None, retrieved_voltage: int | None = None):
         msg = ["On a voltage check, the current stored voltage did not match the voltage gathered from the device."]
-        if old_voltage is not None:
-            msg.append(f"Stored voltage: {old_voltage}")
-        if new_voltage is not None:
-            msg.append(f"Last fetched voltage: {new_voltage}")
+        if stored_voltage is not None:
+            self.stored_voltage = stored_voltage
+            msg.append(f"Stored voltage: {stored_voltage}")
+        if retrieved_voltage is not None:
+            self.retrieved_voltage = retrieved_voltage
+            msg.append(f"Last fetched voltage: {retrieved_voltage}")
 
         super().__init__("\n\t".join(msg).strip())
