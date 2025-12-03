@@ -25,6 +25,9 @@ dev = [
     "mypy (>=1.19.0,<2.0.0)"
 ]
 
+[project.scripts]
+vflexctl = "vflexctl.main:cli"
+
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -15,6 +15,7 @@ from vflexctl.device_interface.common_sequences import (
     GET_SERIAL_NUMBER_SEQUENCE,
 )
 from vflexctl.exceptions import InvalidProtocolMessageLengthError, SerialNumberMismatchError, VoltageMismatchError
+from vflexctl.input_handler.voltage_convert import voltage_to_millivolt
 from vflexctl.midi_transport.receivers import drain_incoming
 from vflexctl.midi_transport.senders import send_sequence
 from vflexctl.protocol import protocol_message_from_midi_messages, prepare_command_frame, prepare_command_for_sending
@@ -184,7 +185,7 @@ class VFlex:
         return led_state
 
     @run_with_handshake
-    def set_voltage(self, volts: int) -> None:
+    def set_voltage(self, millivolts: int) -> None:
         """
         Set the voltage for the device to the specified number of millivolts. Updates the current voltage
         with the data returned after the command.
@@ -192,16 +193,25 @@ class VFlex:
         The VFlex *should* return the new voltage, but if you wanted to be safer, run get_voltage() again
         after this.
 
-        :param volts: The voltage to set the device to, in millivolts.
+        :param millivolts: The voltage to set the device to, in millivolts.
         :return: Nothing, but updates the voltage for the object under self.current_voltage.
         """
         self._guard_voltage()
-        command = prepare_command_for_sending(prepare_command_frame(set_voltage_command(volts)))
+        command = prepare_command_for_sending(prepare_command_frame(set_voltage_command(millivolts)))
         send_sequence(self.io_port, command)
         returned_data = drain_incoming(self.io_port)
         returned_voltage = get_millivolts_from_protocol_message(protocol_message_from_midi_messages(returned_data))
         self.log.debug("Voltage returned after setting", returned_voltage=returned_voltage)
         self.current_voltage = returned_voltage
+
+    def set_voltage_volts(self, volts: float) -> None:
+        """
+        Set the voltage for the device to the specified number of volts. Converts to millivonts
+        before calling set_voltage().
+        :param volts: The voltage to set the device to, in volts.
+        :return: Nothing, but updates the voltage for the object under self.current_voltage.
+        """
+        self.set_voltage(millivolts=voltage_to_millivolt(volts))
 
     @run_with_handshake
     def set_led_state(self, led_state: bool | Literal[0, 1]) -> None:
@@ -239,3 +249,7 @@ class VFlex:
         if reported_current_voltage != self.current_voltage:
             raise VoltageMismatchError(stored_voltage=self.current_voltage, retrieved_voltage=reported_current_voltage)
         return None
+
+    @property
+    def led_state_str(self) -> str:
+        return "Always On" if self.led_state is False else "Not Always On"
