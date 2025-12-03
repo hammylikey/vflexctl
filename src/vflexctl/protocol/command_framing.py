@@ -50,22 +50,13 @@ def prepare_command_for_sending(frames: list[VFlexProtoMessage] | VFlexProtoMess
     :return: The list of MIDI notes/commands to send to the device.
     """
     if len(frames) == 0:
-        raise ValueError("No subcommand frames provided.")
+        raise ValueError("No command frames provided.")
     if isinstance(frames[0], int):
         frames = [frames]
 
     command: list[MIDITriplet] = [VFlexProto.COMMAND_START]
-    pre_transport_command: list[int] = []
     for frame in frames:
         for byte_integer in frame:
-            pre_transport_command.extend(midi_bytes_from_protocol_byte(byte_integer))
-    command.extend(_split_to_triplets(pre_transport_command))
+            command.append(midi_bytes_from_protocol_byte(byte_integer))
     command.append(VFlexProto.COMMAND_END)
     return command
-
-
-def _split_to_triplets(command: list[int]) -> list[MIDITriplet]:
-    if len(command) % 3 != 0:
-        raise ValueError("Command length must be multiple of 3")
-
-    return [cast(tuple[int, int, int], tuple(command[i : i + 3])) for i in range(0, len(command), 3)]

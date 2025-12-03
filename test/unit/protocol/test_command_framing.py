@@ -1,4 +1,5 @@
 import pytest
+import mido
 
 from vflexctl.protocol import VFlexProto
 from vflexctl.protocol.command_framing import *
@@ -23,3 +24,14 @@ def test_prepare_command_frame_rejects_a_set_for_safety():
     """
     with pytest.raises(TypeError):
         _ = prepare_command_frame({VFlexProto.CMD_GET_SERIAL_NUMBER})
+
+
+def test_prepare_command_for_sending_makes_a_list_of_midi_messages():
+    """
+    This test fails if/when Message.from_bytes fails due to a malformed MIDI message.
+    :return:
+    """
+    command_frame = prepare_command_frame([VFlexProto.CMD_GET_VOLTAGE])
+    prepared_command = prepare_command_for_sending(command_frame)
+    for midi_triplet in prepared_command:
+        _ = mido.Message.from_bytes(midi_triplet)

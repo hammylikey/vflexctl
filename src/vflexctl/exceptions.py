@@ -1,3 +1,13 @@
+__all__ = [
+    "InvalidProtocolMessageLengthError",
+    "InvalidProtocolMessageError",
+    "IncorrectCommandByte",
+    "UnsafeAdjustmentError",
+    "SerialNumberMismatchError",
+    "VoltageMismatchError",
+]
+
+
 class InvalidProtocolMessageError(ValueError):
 
     def __init__(self, protocol_message: list[int], message: str = "Invalid protocol message"):
@@ -26,7 +36,16 @@ class IncorrectCommandByte(InvalidProtocolMessageError):
         super().__init__(protocol_message, message)
 
 
-class SerialNumberMismatchError(ValueError):
+class UnsafeAdjustmentError(Exception):
+
+    def __init__(self, ex_message: str | None = None):
+        msg = "An unsafe adjustment to the connected VFlex was stopped."
+        if ex_message is not None:
+            msg += "\n" + ex_message
+        super().__init__(msg)
+
+
+class SerialNumberMismatchError(UnsafeAdjustmentError):
 
     def __init__(self, old_serial_number: str | None = None, new_serial_number: str | None = None):
         msg = ["The serial number does not match the last fetched serial number."]
@@ -34,5 +53,16 @@ class SerialNumberMismatchError(ValueError):
             msg.append(f"First fetched serial number: {old_serial_number}")
         if new_serial_number is not None:
             msg.append(f"Last fetched serial number: {new_serial_number}")
+
+        super().__init__("\n\t".join(msg).strip())
+
+
+class VoltageMismatchError(UnsafeAdjustmentError):
+    def __init__(self, old_voltage: float | None = None, new_voltage: float | None = None):
+        msg = ["On a voltage check, the current stored voltage did not match the voltage gathered from the device."]
+        if old_voltage is not None:
+            msg.append(f"Stored voltage: {old_voltage}")
+        if new_voltage is not None:
+            msg.append(f"Last fetched voltage: {new_voltage}")
 
         super().__init__("\n\t".join(msg).strip())

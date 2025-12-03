@@ -14,7 +14,7 @@ from vflexctl.device_interface.common_sequences import (
     GET_VOLTAGE_SEQUENCE,
     GET_SERIAL_NUMBER_SEQUENCE,
 )
-from vflexctl.exceptions import InvalidProtocolMessageLengthError, SerialNumberMismatchError
+from vflexctl.exceptions import InvalidProtocolMessageLengthError, SerialNumberMismatchError, VoltageMismatchError
 from vflexctl.midi_transport.receivers import drain_incoming
 from vflexctl.midi_transport.senders import send_sequence
 from vflexctl.protocol import protocol_message_from_midi_messages, prepare_command_frame, prepare_command_for_sending
@@ -56,7 +56,7 @@ class VFlex:
     current_voltage: int | None = None
 
     # LED behaviour state as reported by the device.
-    led_state: int | None = None
+    led_state: bool | None = None
 
     # Whether to enforce safety checks (e.g., ensuring serial number doesn't change).
     safe_adjust: bool
@@ -67,16 +67,17 @@ class VFlex:
         self.safe_adjust = safe_adjust
 
     @classmethod
-    def with_io_name(cls, name: str) -> Self:
+    def with_io_name(cls, name: str, *, safe_adjust: bool = True) -> Self:
         """
         Gets a handle to a VFlex adapter using a provided port name.
         :param name: The port name to use with MIDO to get the MIDI port.
+        :param safe_adjust: Whether (or not) to add extra checks for adjustments.
         :return: VFlex instance with the correct port for talking to it.
         """
         io_names = mido.get_ioport_names()
         if name not in io_names:
             raise RuntimeError(f"I/O port name '{name}' not found.")
-        return cls(mido.open_ioport(name))
+        return cls(mido.open_ioport(name), safe_adjust=safe_adjust)
 
     @classmethod
     def get_any(cls) -> Self:
@@ -98,7 +99,7 @@ class VFlex:
         self._initial_get_led_state()
         self._initial_get_voltage()
 
-    def get_serial_number(self) -> None:
+    def get_serial_number(self) -> str | None:
         """
         Fetches (or re-fetches) the serial number of the connected VFlex. If the object is set to `safe_adjust`,
         if the serial number changes between fetches, this **will** raise a SerialNumberMismatchError. This is
@@ -123,7 +124,7 @@ class VFlex:
             raise SerialNumberMismatchError(
                 old_serial_number=self.serial_number, new_serial_number=returned_serial_number
             )
-        return None
+        return returned_serial_number
 
     def _initial_get_voltage(self) -> None:
         """
@@ -151,25 +152,28 @@ class VFlex:
             self.led_state = protocol_decode_led_state(protocol_message_from_midi_messages(returned_data))
 
     @run_with_handshake
-    def get_voltage(self) -> int:
+    def get_voltage(self, *, update_self: bool = True) -> int:
         """
-        Runs the "Get Voltage" command on device to get the voltage. This both returns the value and adds it to
-        the object under `self.current_voltage`.
+        Runs the "Get Voltage" command on device to get the voltage. This both returns the value, It also adds it to
+        the object under `self.current_voltage` if update_self is True.
 
+        :param update_self: On retrieving the voltage, whether to update `self.current_voltage` or not. Defaults to True.
         :return: Integer for the current voltage, in millivolts. (Float divide by 1000 to get the Volts)
         """
         send_sequence(self.io_port, GET_VOLTAGE_SEQUENCE)
         returned_data = drain_incoming(self.io_port)
         millivolts = get_millivolts_from_protocol_message(protocol_message_from_midi_messages(returned_data))
-        self.current_voltage = millivolts
         self.log.debug("Retrieved current voltage", current_voltage=self.current_voltage)
+        if update_self:
+            self.current_voltage = millivolts
         return millivolts
 
     @run_with_handshake
-    def get_led_state(self) -> int:
+    def get_led_state(self) -> bool:
         """
         Runs the "Get Led State" command on device to get the LED state. This both returns the value and adds it
         to the object under `self.led_state`.
+
         :return:
         """
         send_sequence(self.io_port, GET_LED_STATE_SEQUENCE)
@@ -191,6 +195,7 @@ class VFlex:
         :param volts: The voltage to set the device to, in millivolts.
         :return: Nothing, but updates the voltage for the object under self.current_voltage.
         """
+        self._guard_voltage()
         command = prepare_command_for_sending(prepare_command_frame(set_voltage_command(volts)))
         send_sequence(self.io_port, command)
         returned_data = drain_incoming(self.io_port)
@@ -219,3 +224,18 @@ class VFlex:
         returned_data = drain_incoming(self.io_port)
         self.led_state = protocol_decode_led_state(protocol_message_from_midi_messages(returned_data))
         self.log.debug("LED State returned after setting", led_state=self.led_state)
+
+    @run_with_handshake
+    def _guard_voltage(self) -> None:
+        """
+        Guards against the voltage changing if self.safe_adjust is True.
+        :return: Nothing
+        :raises VoltageMismatchError: Subclass of UnsafeAdjustmentError, if the voltage stored does not match
+        the voltage that's re-retrieved.
+        """
+        if not self.safe_adjust:
+            return None
+        reported_current_voltage = self.get_voltage(update_self=False)
+        if reported_current_voltage != self.current_voltage:
+            raise VoltageMismatchError(old_voltage=self.current_voltage, new_voltage=reported_current_voltage)
+        return None
