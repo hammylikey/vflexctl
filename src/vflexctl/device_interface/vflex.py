@@ -140,6 +140,7 @@ class VFlex:
             self.current_voltage = get_millivolts_from_protocol_message(
                 protocol_message_from_midi_messages(returned_data)
             )
+        return None
 
     def _initial_get_led_state(self) -> None:
         """
@@ -151,6 +152,7 @@ class VFlex:
         returned_data = drain_incoming(self.io_port)
         if self.led_state is None:
             self.led_state = protocol_decode_led_state(protocol_message_from_midi_messages(returned_data))
+        return None
 
     @run_with_handshake
     def get_voltage(self, *, update_self: bool = True) -> int:

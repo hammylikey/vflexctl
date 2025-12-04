@@ -15,4 +15,4 @@ def set_led_state_command(value: bool | Literal[0, 1]) -> VFlexProtoMessage:
     :return: Protocol message to send to the device.
     """
     int_value = int(value)
-    return [VFlexProto.CMD_LED_STATE, int_value]
+    return [VFlexProto.CMD_SET_LED_STATE, int_value]

@@ -1,6 +1,8 @@
 from collections.abc import Iterable
 from typing import cast
 
+import structlog
+
 from . import VFlexProto
 from .logger import log
 from ..types import MIDITriplet, VFlexProtoMessage
@@ -20,7 +22,8 @@ def prepare_command_frame(sub_command: Iterable[int]) -> list[int]:
         raise TypeError(
             "sub_command is iterable, but a set is unordered. This won't process a set to guard against bad commands."
         )
-    # log.info("Preparing command frame", command=sub_command)
+    if structlog.is_configured():
+        log.info("Preparing command frame", command=sub_command)
     sanitised_subcommand: list[int] = [int(x) for x in sub_command]
     return [
         len(sanitised_subcommand) + 1,

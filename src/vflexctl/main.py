@@ -17,8 +17,8 @@ def configure_logging(verbose: bool, debug: bool):
 
 @cli.callback()
 def main(
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose logging"),
-    debug: bool = typer.Option(False, "--debug", "-vv", help="Enable debug logging"),
+    verbose: bool = typer.Option(False, "--verbose", help="Enable verbose logging"),
+    debug: bool = typer.Option(False, "--debug", help="Enable debug logging"),
 ):
     """
     Global options for vflexctl.

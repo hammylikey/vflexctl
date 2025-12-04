@@ -21,7 +21,7 @@ VFlex Serial Number: {v_flex.serial_number}
 Current Voltage: {float(v_flex.current_voltage)/1000:.2f}
 LED State: {v_flex.led_state_str}
         """.strip()
-    print(message)
+    typer.echo(message)
 
 
 @cli.command(name="read")
@@ -37,7 +37,7 @@ def get_current_v_flex_state() -> None:
 @cli.command(name="set")
 def set_v_flex_state(
     voltage: float | None = typer.Option(
-        None, "--voltage", "-volt", help="Voltage to set, in Volts (e.g 5.00, 12, etc, up to 48.00)"
+        None, "--voltage", "-v", help="Voltage to set, in Volts (e.g 5.00, 12, etc, up to 48.00)"
     ),
     led: Literal["on", "off"] | None = typer.Option(
         None, "--led", "-l", help='LED state to set, either "on" for always on, or "off" for not always on.'
@@ -61,13 +61,13 @@ def set_v_flex_state(
         else:
             pre_msg += "not be always on"
         message.append(pre_msg)
-    print("\n".join(message))
+    typer.echo("\n".join(message))
 
     if voltage is not None:
         v_flex.set_voltage_volts(voltage)
     if led is not None:
         v_flex.set_led_state(0 if led == "on" else 1)
 
-    print("State post set:")
+    typer.echo("State post set:")
     _print_current_state(v_flex)
     return None

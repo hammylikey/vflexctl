@@ -22,7 +22,10 @@ class VFlexProto:
     CMD_GET_SERIAL_NUMBER: Final = 0x08  # 8
     """Protocol byte for the command to get the Serial Number."""
 
-    CMD_LED_STATE: Final = 0x0F  # 15
+    CMD_GET_LED_STATE: Final = 0x0F  # 15
+    """Protocol byte for the command to get the LED state."""
+
+    CMD_SET_LED_STATE: Final = CMD_GET_LED_STATE | 0x80
     """Protocol byte for the command to set the LED state."""
 
     CMD_GET_VOLTAGE: Final = 0x12  # 18

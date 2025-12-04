@@ -14,6 +14,6 @@ def protocol_decode_led_state(protocol_message: list[int]) -> bool:
     """
     if len(protocol_message) != 3:
         raise InvalidProtocolMessageLengthError(protocol_message, 3)
-    if protocol_message[1] != VFlexProto.CMD_LED_STATE:
-        raise IncorrectCommandByte(protocol_message, VFlexProto.CMD_LED_STATE)
+    if protocol_message[1] != VFlexProto.CMD_GET_LED_STATE:
+        raise IncorrectCommandByte(protocol_message, VFlexProto.CMD_GET_LED_STATE)
     return bool(protocol_message[2])

@@ -13,6 +13,6 @@ GET_SERIAL_NUMBER_SEQUENCE: CommandList = prepare_command_for_sending(
     prepare_command_frame([VFlexProto.CMD_GET_SERIAL_NUMBER])
 )
 
-GET_LED_STATE_SEQUENCE: CommandList = prepare_command_for_sending(prepare_command_frame([VFlexProto.CMD_LED_STATE]))
+GET_LED_STATE_SEQUENCE: CommandList = prepare_command_for_sending(prepare_command_frame([VFlexProto.CMD_GET_LED_STATE]))
 
 GET_VOLTAGE_SEQUENCE: CommandList = prepare_command_for_sending(prepare_command_frame([VFlexProto.CMD_GET_VOLTAGE]))
