@@ -1,27 +1,41 @@
-from typing import Literal
+from enum import StrEnum
 
 import typer
+from rich import print
 
 from vflexctl.device_interface import VFlex
 
 __all__ = ["cli"]
 
+from vflexctl.input_handler.voltage_convert import decimal_normalise_voltage
+
 cli = typer.Typer(name="vflexctl", no_args_is_help=True)
 
-type LEDOption = Literal["on", "off"]
+VFLEX_MIDI_INTEGER_LIMIT = 65535
+
+
+class LEDOption(StrEnum):
+    ALWAYS_ON = "always-on"
+    DISABLED_DURING_OPERATION = "disabled"
+
+    def __bool__(self):
+        return self == LEDOption.DISABLED_DURING_OPERATION
+
+    def __int__(self):
+        return int(bool(self))
 
 
 def _get_connected_v_flex() -> VFlex:
     return VFlex.get_any()
 
 
-def _print_current_state(v_flex: VFlex):
+def _current_state_str(v_flex: VFlex) -> str:
     message = f"""
 VFlex Serial Number: {v_flex.serial_number}
 Current Voltage: {float(v_flex.current_voltage)/1000:.2f}
 LED State: {v_flex.led_state_str}
         """.strip()
-    typer.echo(message)
+    return message
 
 
 @cli.command(name="read")
@@ -31,7 +45,7 @@ def get_current_v_flex_state() -> None:
     """
     v_flex = _get_connected_v_flex()
     v_flex.wake_up()
-    _print_current_state(v_flex)
+    print(_current_state_str(v_flex))
 
 
 @cli.command(name="set")
@@ -39,35 +53,41 @@ def set_v_flex_state(
     voltage: float | None = typer.Option(
         None, "--voltage", "-v", help="Voltage to set, in Volts (e.g 5.00, 12, etc, up to 48.00)"
     ),
-    led: Literal["on", "off"] | None = typer.Option(
+    led: LEDOption | None = typer.Option(
         None, "--led", "-l", help='LED state to set, either "on" for always on, or "off" for not always on.'
     ),
 ):
     """
     Set voltage and/or LED state for the VFlex device. Prints the state after being set.
     """
+    if voltage > (VFLEX_MIDI_INTEGER_LIMIT - 1 / 1000):
+        print(
+            "Voltage is being set higher than what can be transmitted. [bold red]The Voltage will not be set.[/bold red]"
+        )
+        voltage = None
+    elif voltage <= 0:
+        print("Voltage is being set to 0, or negative. [bold red]The Voltage will not be set.[/bold red]")
+        voltage = None
     if voltage is None and led is None:
-        print("You should specify either a voltage or LED state to set.")
+        print("[bold]You should specify either a valid voltage or LED state to set.[/bold]")
         return None
     v_flex = _get_connected_v_flex()
     v_flex.wake_up()
     message: list[str] = []
     if voltage is not None:
-        message.append(f"Setting voltage to {float(voltage):.2f}V")
+        message.append(f"Setting voltage to {decimal_normalise_voltage(voltage)}V")
+        # message.append(f"Setting voltage to {float(voltage):.2f}V")
     if led is not None:
         pre_msg = "Setting LED to "
-        if led == "on":
-            pre_msg += "be always on"
-        else:
-            pre_msg += "not be always on"
+        pre_msg += "be disabled during operation" if bool(led) else "always be on"
         message.append(pre_msg)
-    typer.echo("\n".join(message))
+    print("\n".join(message))
 
     if voltage is not None:
         v_flex.set_voltage_volts(voltage)
     if led is not None:
-        v_flex.set_led_state(0 if led == "on" else 1)
+        v_flex.set_led_state(bool(led))
 
-    typer.echo("State post set:")
-    _print_current_state(v_flex)
+    print("State post set:")
+    print(_current_state_str(v_flex))
     return None

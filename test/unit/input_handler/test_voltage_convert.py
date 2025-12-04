@@ -31,5 +31,5 @@ def test_voltage_to_millivolt_raises_when_string_is_not_a_number():
     ],
 )
 def test_voltage_to_millivolts_raises_when_given_non_string_int_float_values(bad_input):
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         voltage_to_millivolt(bad_input)

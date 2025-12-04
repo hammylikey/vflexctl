@@ -254,4 +254,4 @@ class VFlex:
 
     @property
     def led_state_str(self) -> str:
-        return "Always On" if self.led_state is False else "Not Always On"
+        return "always on" if self.led_state is False else "disabled during operation"
