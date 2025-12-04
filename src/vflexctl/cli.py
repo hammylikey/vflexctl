@@ -60,14 +60,15 @@ def set_v_flex_state(
     """
     Set voltage and/or LED state for the VFlex device. Prints the state after being set.
     """
-    if voltage > (VFLEX_MIDI_INTEGER_LIMIT - 1 / 1000):
-        print(
-            "Voltage is being set higher than what can be transmitted. [bold red]The Voltage will not be set.[/bold red]"
-        )
-        voltage = None
-    elif voltage <= 0:
-        print("Voltage is being set to 0, or negative. [bold red]The Voltage will not be set.[/bold red]")
-        voltage = None
+    if isinstance(voltage, float | int):
+        if voltage > (VFLEX_MIDI_INTEGER_LIMIT - 1 / 1000):
+            print(
+                "Voltage is being set higher than what can be transmitted. [bold red]The Voltage will not be set.[/bold red]"
+            )
+            voltage = None
+        elif voltage <= 0:
+            print("Voltage is being set to 0, or negative. [bold red]The Voltage will not be set.[/bold red]")
+            voltage = None
     if voltage is None and led is None:
         print("[bold]You should specify either a valid voltage or LED state to set.[/bold]")
         return None
