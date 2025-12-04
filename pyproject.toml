@@ -6,6 +6,7 @@ authors = [
     {name = "hameedm",email = "hameedm@protonmail.com"}
 ]
 readme = "readme.rst"
+license = "Apache 2.0"
 requires-python = "^3.12"
 dependencies = [
     "python-rtmidi (>=1.5.8,<2.0.0)",
