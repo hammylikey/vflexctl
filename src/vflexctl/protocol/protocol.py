@@ -1,4 +1,4 @@
-from typing import Final
+from typing import Final, cast
 from vflexctl.types import MIDITriplet
 
 __all__ = ["VFlexProto", "protocol_message_from_midi_messages"]
@@ -71,7 +71,7 @@ def protocol_message_from_midi_messages(midi_messages: list[MIDITriplet]) -> lis
     """
     unsanitised_message: list[int] = []
     for midi_message in midi_messages:
-        if is_control_frame(tuple(midi_message)):
+        if is_control_frame(cast(MIDITriplet, tuple(midi_message))):
             continue
         unsanitised_message.append(protocol_byte_from_midi_bytes(midi_message))
     return validate_and_trim_protocol_message(unsanitised_message)

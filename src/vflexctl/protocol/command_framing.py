@@ -55,7 +55,8 @@ def prepare_command_for_sending(frames: list[VFlexProtoMessage] | VFlexProtoMess
     if len(frames) == 0:
         raise ValueError("No command frames provided.")
     if isinstance(frames[0], int):
-        frames = [frames]
+        frames = cast(list[VFlexProtoMessage], [frames])
+    frames = cast(list[VFlexProtoMessage], frames)
 
     command: list[MIDITriplet] = [VFlexProto.COMMAND_START]
     for frame in frames:
