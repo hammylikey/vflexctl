@@ -5,7 +5,7 @@ import typer
 import structlog
 
 
-def configure_logging(verbose: bool, debug: bool):
+def configure_logging(verbose: bool, debug: bool) -> None:
     if debug:
         level = logging.DEBUG
     elif verbose:
@@ -19,7 +19,7 @@ def configure_logging(verbose: bool, debug: bool):
 def main(
     verbose: bool = typer.Option(False, "--verbose", help="Enable verbose logging"),
     debug: bool = typer.Option(False, "--debug", help="Enable debug logging"),
-):
+) -> None:
     """
     Global options for vflexctl.
     """

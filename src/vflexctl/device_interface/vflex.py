@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from functools import wraps
-from typing import Any, Self
+from typing import Any, Self, TypeVar, ParamSpec, Concatenate, cast
 from typing import Literal
 
 import mido
@@ -30,15 +30,19 @@ DEFAULT_PORT_NAME = "Werewolf vFlex"
 __all__ = ["VFlex"]
 
 
-def run_with_handshake(func: Callable[..., Any]):
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def run_with_handshake(func: Callable[Concatenate["VFlex", P], R]) -> Callable[Concatenate["VFlex", P], R]:
 
     @wraps(func)
-    def wrapper(v_flex: "VFlex", *args: Any, **kwargs: Any) -> Any:
+    def wrapper(v_flex: "VFlex", *args: P.args, **kwargs: P.kwargs) -> R:
         v_flex.log.info("Running wake-up commands")
         v_flex.wake_up()
         return func(v_flex, *args, **kwargs)
 
-    return wrapper
+    return cast(Callable[Concatenate["VFlex", P], R], wrapper)
 
 
 class VFlex:

@@ -25,7 +25,7 @@ def send_sequence(output: BaseOutput, sequence: list[MIDITriplet]) -> None:
         send_triplet(output, command)
 
 
-def send_triplet(output: BaseOutput, triplet_data: MIDITriplet, *, pause=0.002) -> None:
+def send_triplet(output: BaseOutput, triplet_data: MIDITriplet, *, pause: float = 0.002) -> None:
     """
     Send a single 3-byte MIDI message
     :param output: MIDI output to send the message to/through

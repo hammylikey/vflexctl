@@ -53,7 +53,7 @@ exclude = '''
 python_version = "3.12"
 warn_unused_configs = true
 strict = true
-exclude = '^tests/|/(\.git|\.mypy_cache|\.tox|\.venv|build|dist)/'
+exclude = '^tests?/|/(\.git|\.mypy_cache|\.tox|\.venv|build|dist)/'
 
 [tool.ruff]
 line-length = 120
@@ -70,4 +70,7 @@ exclude = '''
 )/
 '''
 
+[[tool.mypy.overrides]]
+module = "mido.*"
+ignore_missing_imports = true
 

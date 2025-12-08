@@ -18,10 +18,10 @@ class LEDOption(StrEnum):
     ALWAYS_ON = "always-on"
     DISABLED_DURING_OPERATION = "disabled"
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return self == LEDOption.DISABLED_DURING_OPERATION
 
-    def __int__(self):
+    def __int__(self) -> int:
         return int(bool(self))
 
 
@@ -32,7 +32,7 @@ def _get_connected_v_flex() -> VFlex:
 def _current_state_str(v_flex: VFlex) -> str:
     message = f"""
 VFlex Serial Number: {v_flex.serial_number}
-Current Voltage: {float(v_flex.current_voltage)/1000:.2f}
+Current Voltage: {float(v_flex.current_voltage or 0)/1000:.2f}
 LED State: {v_flex.led_state_str}
         """.strip()
     return message
@@ -56,7 +56,7 @@ def set_v_flex_state(
     led: LEDOption | None = typer.Option(
         None, "--led", "-l", help='LED state to set, either "on" for always on, or "off" for not always on.'
     ),
-):
+) -> None:
     """
     Set voltage and/or LED state for the VFlex device. Prints the state after being set.
     """
