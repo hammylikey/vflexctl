@@ -1,6 +1,6 @@
 [project]
 name = "vflexctl"
-version = "0.1.1"
+version = "0.1.2"
 description = "Command line tool to set the output voltage for VFLEX devices"
 authors = [
     {name = "hameedm",email = "hameedm@protonmail.com"}
@@ -29,6 +29,14 @@ dev = [
 [project.scripts]
 vflexctl = "vflexctl.main:cli"
 
+[tool.poetry]
+packages = [
+    { include = "vflexctl", from = "src" },
+]
+
+include = [
+    { path = "src/vflexctl/py.typed", format = ["wheel"] },
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
