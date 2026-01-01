@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+import click
 import typer
 from rich import print
 
@@ -8,8 +9,9 @@ from vflexctl.device_interface import VFlex
 __all__ = ["cli"]
 
 from vflexctl.input_handler.voltage_convert import decimal_normalise_voltage
+from vflexctl.main import AppContext
 
-cli = typer.Typer(name="vflexctl", no_args_is_help=True)
+cli: typer.Typer = typer.Typer(name="vflexctl", no_args_is_help=True)
 
 VFLEX_MIDI_INTEGER_LIMIT = 65535
 
@@ -25,8 +27,15 @@ class LEDOption(StrEnum):
         return int(bool(self))
 
 
-def _get_connected_v_flex() -> VFlex:
-    return VFlex.get_any()
+def _get_app_context() -> AppContext:
+    obj = click.get_current_context().obj
+    if not isinstance(obj, AppContext):
+        raise TypeError("Context is (somehow) not of the correct type.")
+    return obj
+
+
+def _get_connected_v_flex(full_handshake: bool = True) -> VFlex:
+    return VFlex.get_any(full_handshake=full_handshake)
 
 
 def _current_state_str(v_flex: VFlex) -> str:
@@ -44,7 +53,7 @@ def get_current_v_flex_state() -> None:
     Print the current state of the connected VFlex device. (Serial, Voltage & LED setting)
     """
     v_flex = _get_connected_v_flex()
-    v_flex.wake_up()
+    v_flex.wake_up(full_handshake=True)
     print(_current_state_str(v_flex))
 
 
@@ -73,7 +82,7 @@ def set_v_flex_state(
         print("[bold]You should specify either a valid voltage or LED state to set.[/bold]")
         return None
     v_flex = _get_connected_v_flex()
-    v_flex.wake_up()
+    v_flex.initial_wake_up()
     message: list[str] = []
     if voltage is not None:
         message.append(f"Setting voltage to {decimal_normalise_voltage(voltage)}V")

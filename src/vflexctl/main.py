@@ -1,8 +1,10 @@
 import logging
 
-from .cli import cli
-import typer
 import structlog
+import typer
+from pydantic import BaseModel
+
+from .cli import cli
 
 
 def configure_logging(verbose: bool, debug: bool) -> None:
@@ -15,8 +17,20 @@ def configure_logging(verbose: bool, debug: bool) -> None:
     structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(level))
 
 
+class AppContext(BaseModel):
+
+    # Whether to run the "full handshake" on the VFlex when adjusting.
+    deep_adjust: bool
+
+
 @cli.callback()
 def main(
+    ctx: typer.Context,
+    deep_adjust: bool = typer.Option(
+        False,
+        "--deep-adjust",
+        help="Use long output format",
+    ),
     verbose: bool = typer.Option(False, "--verbose", help="Enable verbose logging"),
     debug: bool = typer.Option(False, "--debug", help="Enable debug logging"),
 ) -> None:
@@ -24,6 +38,7 @@ def main(
     Global options for vflexctl.
     """
     configure_logging(verbose, debug)
+    ctx.obj = AppContext(deep_adjust=deep_adjust)
 
 
 if __name__ == "__main__":

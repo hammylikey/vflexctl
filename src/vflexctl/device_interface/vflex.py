@@ -39,7 +39,7 @@ def run_with_handshake(func: Callable[Concatenate["VFlex", P], R]) -> Callable[C
     @wraps(func)
     def wrapper(v_flex: "VFlex", *args: P.args, **kwargs: P.kwargs) -> R:
         v_flex.log.info("Running wake-up commands")
-        v_flex.wake_up()
+        v_flex.wake_up(full_handshake=v_flex.full_handshake)
         return func(v_flex, *args, **kwargs)
 
     return cast(Callable[Concatenate["VFlex", P], R], wrapper)
@@ -66,10 +66,20 @@ class VFlex:
     # Whether to enforce safety checks (e.g., ensuring serial number doesn't change).
     safe_adjust: bool
 
-    def __init__(self, io_port: BaseIOPort, safe_adjust: bool = True):
+    # On handshakes, whether to run the full wake cycle or not
+    full_handshake: bool
+
+    def __init__(self, io_port: BaseIOPort, safe_adjust: bool = True, full_handshake: bool = False) -> None:
         self.io_port = io_port
         self.log = structlog.get_logger("vflexctl.VFlex").bind(io_port=io_port)
         self.safe_adjust = safe_adjust
+        self.full_handshake = full_handshake
+
+    def use_quick_handshakes(self) -> None:
+        self.full_handshake = False
+
+    def use_full_handshakes(self) -> None:
+        self.full_handshake = True
 
     @classmethod
     def with_io_name(cls, name: str, *, safe_adjust: bool = True) -> Self:
@@ -85,24 +95,33 @@ class VFlex:
         return cls(mido.open_ioport(name), safe_adjust=safe_adjust)
 
     @classmethod
-    def get_any(cls) -> Self:
+    def get_any(cls, safe_adjust: bool = True, full_handshake: bool = False) -> Self:
         """
         Gets _a_ handle to a VFlex adapter using the expected port name. If multiple are connected
         there's no guarantee that multiple runs of the tool will connect to the same one.
         :return:
         """
-        return cls(mido.open_ioport(DEFAULT_PORT_NAME))
+        return cls(mido.open_ioport(DEFAULT_PORT_NAME), safe_adjust=safe_adjust, full_handshake=full_handshake)
 
-    def wake_up(self) -> None:
+    def wake_up(self, full_handshake: bool = False) -> None:
         """
         "Wakes up" the connected VFlex to get it ready to receive commands. Functions
-        that use the `run_with_handshake()` decorator automatically use htis
+        that use the `run_with_handshake()` decorator automatically use this.
 
         :return: Nothing, but ensures that the device is ready to receive commands.
         """
         self.get_serial_number()
-        self._initial_get_led_state()
-        self._initial_get_voltage()
+        if full_handshake:
+            self._initial_get_led_state()
+            self._initial_get_voltage()
+
+    def initial_wake_up(self) -> None:
+        """
+        Convenience method to run wake_up with a full handshake.
+
+        :return:
+        """
+        self.wake_up(full_handshake=True)
 
     def get_serial_number(self) -> str | None:
         """
