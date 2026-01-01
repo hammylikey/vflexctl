@@ -5,7 +5,7 @@ description = "Command line tool to set the output voltage for VFLEX devices"
 authors = [
     {name = "hameedm",email = "hameedm@protonmail.com"}
 ]
-readme = "readme.rst"
+readme = "readme.md"
 license = "Apache 2.0"
 requires-python = ">=3.12,<4.0"
 dependencies = [

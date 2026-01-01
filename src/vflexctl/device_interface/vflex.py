@@ -69,11 +69,15 @@ class VFlex:
     # On handshakes, whether to run the full wake cycle or not
     full_handshake: bool
 
-    def __init__(self, io_port: BaseIOPort, safe_adjust: bool = True, full_handshake: bool = False) -> None:
+    def __init__(
+        self, io_port: BaseIOPort, safe_adjust: bool = True, full_handshake: bool = False, wake: bool = False
+    ) -> None:
         self.io_port = io_port
         self.log = structlog.get_logger("vflexctl.VFlex").bind(io_port=io_port)
         self.safe_adjust = safe_adjust
         self.full_handshake = full_handshake
+        if wake:
+            self.initial_wake_up()
 
     def use_quick_handshakes(self) -> None:
         self.full_handshake = False
@@ -82,26 +86,38 @@ class VFlex:
         self.full_handshake = True
 
     @classmethod
-    def with_io_name(cls, name: str, *, safe_adjust: bool = True) -> Self:
+    def with_io_name(
+        cls, name: str, *, safe_adjust: bool = True, full_handshake: bool = False, wake: bool = False
+    ) -> Self:
         """
         Gets a handle to a VFlex adapter using a provided port name.
+
         :param name: The port name to use with MIDO to get the MIDI port.
         :param safe_adjust: Whether (or not) to add extra checks for adjustments.
+        :param full_handshake: Whether (or not) to run the full wake cycle when adjusting parameters
+        :param wake: Whether to run initial_wake_up() on the instance as part of initialisation.
         :return: VFlex instance with the correct port for talking to it.
         """
         io_names = mido.get_ioport_names()
         if name not in io_names:
             raise RuntimeError(f"I/O port name '{name}' not found.")
-        return cls(mido.open_ioport(name), safe_adjust=safe_adjust)
+        return cls(mido.open_ioport(name), safe_adjust=safe_adjust, full_handshake=full_handshake, wake=wake)
 
     @classmethod
-    def get_any(cls, safe_adjust: bool = True, full_handshake: bool = False) -> Self:
+    def get_any(cls, safe_adjust: bool = True, full_handshake: bool = False, wake: bool = False) -> Self:
         """
         Gets _a_ handle to a VFlex adapter using the expected port name. If multiple are connected
-        there's no guarantee that multiple runs of the tool will connect to the same one.
-        :return:
+        there's no guarantee that multiple calls for this will get the same one, so you should
+        likely check the serial number after doing the initial wake up.
+
+        :param safe_adjust: Whether (or not) to add extra checks for adjustments.
+        :param full_handshake: Whether (or not) to run the full wake cycle when adjusting parameters
+        :param wake: Whether to run initial_wake_up() on the instance as part of initialisation.
+        :return: VFlex instance with the correct port for talking to it.
         """
-        return cls(mido.open_ioport(DEFAULT_PORT_NAME), safe_adjust=safe_adjust, full_handshake=full_handshake)
+        return cls(
+            mido.open_ioport(DEFAULT_PORT_NAME), safe_adjust=safe_adjust, full_handshake=full_handshake, wake=wake
+        )
 
     def wake_up(self, full_handshake: bool = False) -> None:
         """
