@@ -52,7 +52,8 @@ def get_current_v_flex_state() -> None:
     """
     Print the current state of the connected VFlex device. (Serial, Voltage & LED setting)
     """
-    v_flex = _get_connected_v_flex()
+    context = _get_app_context()
+    v_flex = _get_connected_v_flex(full_handshake=context.deep_adjust)
     v_flex.initial_wake_up()
     print(_current_state_str(v_flex))
 
@@ -81,7 +82,8 @@ def set_v_flex_state(
     if voltage is None and led is None:
         print("[bold]You should specify either a valid voltage or LED state to set.[/bold]")
         return None
-    v_flex = _get_connected_v_flex()
+    context = _get_app_context()
+    v_flex = _get_connected_v_flex(full_handshake=context.deep_adjust)
     v_flex.initial_wake_up()
     message: list[str] = []
     if voltage is not None:
