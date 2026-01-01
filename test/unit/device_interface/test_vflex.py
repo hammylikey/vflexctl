@@ -42,7 +42,7 @@ def test_v_flex_initialises_with_wake_up_as_expected(mocker, mock_io_port):
     mocker.patch("vflexctl.device_interface.vflex.get_millivolts_from_protocol_message", return_value=5000)
     mocker.patch("vflexctl.device_interface.vflex.protocol_decode_led_state", return_value=False)
     v_flex = VFlex(mock_io_port, safe_adjust=False)
-    v_flex.wake_up()
+    v_flex.initial_wake_up()
     assert v_flex.current_voltage == 5000
     assert v_flex.led_state == False
     assert v_flex.serial_number == "fooSerial"
@@ -86,7 +86,7 @@ def test_set_voltage_guards_as_standard_if_the_voltage_changes(
     mocker.patch("vflexctl.device_interface.vflex.get_millivolts_from_protocol_message", return_value=5000)
     mocker.patch("vflexctl.device_interface.vflex.protocol_decode_led_state", return_value=False)
     v_flex = VFlex(mock_io_port, safe_adjust=True)
-    v_flex.wake_up()
+    v_flex.initial_wake_up()
     assert v_flex.current_voltage == 5000
     v_flex.current_voltage = 10000
     with pytest.raises(VoltageMismatchError) as exc:
@@ -278,3 +278,29 @@ def test_get_any_uses_default_port_name(mocker):
     mock_open.assert_called_once_with(vflex_module.DEFAULT_PORT_NAME)
     assert isinstance(v_flex, VFlex)
     assert v_flex.io_port is mock_port
+
+
+def test_get_any_passes_on_parameters_as_expected(mocker):
+    mock_open = mocker.patch("vflexctl.device_interface.vflex.mido.open_ioport")
+    mock_port = mocker.MagicMock(name="ioport")
+    mock_open.return_value = mock_port
+
+    v_flex = VFlex.get_any(safe_adjust=False, full_handshake=False)
+    assert v_flex.full_handshake is False
+    assert v_flex.safe_adjust is False
+
+
+def test_mutation_of_full_handshake_with_the_functions(mocker):
+    mocker.patch("vflexctl.device_interface.vflex.mido.open_ioport")
+    mocker.MagicMock(name="ioport")
+
+    v_flex = VFlex.get_any()
+    count = 0
+
+    for _ in range(10):
+        if count % 2 == 0:
+            v_flex.use_full_handshakes()
+        else:
+            v_flex.use_quick_handshakes()
+
+        assert v_flex.full_handshake == (count % 2 == 0)
