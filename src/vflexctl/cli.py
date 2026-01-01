@@ -9,7 +9,7 @@ from vflexctl.device_interface import VFlex
 __all__ = ["cli"]
 
 from vflexctl.input_handler.voltage_convert import decimal_normalise_voltage
-from vflexctl.main import AppContext
+from vflexctl.context import AppContext
 
 cli: typer.Typer = typer.Typer(name="vflexctl", no_args_is_help=True)
 
@@ -34,7 +34,7 @@ def _get_app_context() -> AppContext:
     return obj
 
 
-def _get_connected_v_flex(full_handshake: bool = True) -> VFlex:
+def _get_connected_v_flex(full_handshake: bool = False) -> VFlex:
     return VFlex.get_any(full_handshake=full_handshake)
 
 
@@ -53,7 +53,7 @@ def get_current_v_flex_state() -> None:
     Print the current state of the connected VFlex device. (Serial, Voltage & LED setting)
     """
     v_flex = _get_connected_v_flex()
-    v_flex.wake_up(full_handshake=True)
+    v_flex.initial_wake_up()
     print(_current_state_str(v_flex))
 
 

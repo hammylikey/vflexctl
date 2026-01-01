@@ -2,8 +2,8 @@ import logging
 
 import structlog
 import typer
-from pydantic import BaseModel
 
+from .context import AppContext
 from .cli import cli
 
 
@@ -15,12 +15,6 @@ def configure_logging(verbose: bool, debug: bool) -> None:
     else:
         level = logging.WARNING
     structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(level))
-
-
-class AppContext(BaseModel):
-
-    # Whether to run the "full handshake" on the VFlex when adjusting.
-    deep_adjust: bool
 
 
 @cli.callback()
