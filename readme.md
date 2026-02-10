@@ -10,7 +10,9 @@ This requires that you have `pipx` installed on your system, using Python 3.12 o
 
 Using `pipx`, install this tool with:
 
+```python
 pipx install vflexctl
+```
 
 ## Usage
 
@@ -18,23 +20,29 @@ pipx install vflexctl
 
 To read your VFlex's current state, use the `read` command:
 
+```python
 $ vflexctl read
 VFlex Serial Number: <your serial here>
 Current Voltage: 12.00
 LED State: Always On
+```
 
 You can set either your voltage, LED state (always on or not always on), or both:
 
+```python
 vflexctl set -v <voltage> -l <always-on|disabled>
+```
 
 ### Voltage
 
 Voltage is set with the `--voltage` or `-v` flag, with your volts as XX.XX. For example:
 
+```python
 vflexctl set -v 12
 vflexctl set -v 5.50
 vflexctl set -v 48.5
 vflexctl set -v 12.0000001
+```
 
 The VFlex communication over MIDI limits the maximum voltage to around 65.5V
 (the limit of a 16-bit integer). Trying to set a higher value will prevent the voltage
@@ -44,8 +52,10 @@ from being set.
 
 LED state is set using the `--led` or `-l` flag, with the value as either:
 
+```python
 vflexctl set -l always-on
 vflexctl set -l disabled
+```
 
 To set both voltage and LED state, use both flags (in any order).
 
@@ -57,8 +67,10 @@ Since 0.2.0, the tool only sends a serial number request after the initial wake-
 This should work to set the voltage more quickly, but you can add this flag to be
 extra sure:
 
+```
 vflexctl --deep-adjust set -v 12
 vflexctl set -v 12
+```
 
 Open a PR (or an issue) if this doesn’t work.
 
