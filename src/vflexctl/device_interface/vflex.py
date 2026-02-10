@@ -115,9 +115,12 @@ class VFlex:
         :param wake: Whether to run initial_wake_up() on the instance as part of initialisation.
         :return: VFlex instance with the correct port for talking to it.
         """
-        return cls(
-            mido.open_ioport(DEFAULT_PORT_NAME), safe_adjust=safe_adjust, full_handshake=full_handshake, wake=wake
-        )
+        matching_port = None
+        for port_name in mido.get_ioport_names():
+            if port_name.lower() == DEFAULT_PORT_NAME.lower():
+                matching_port = port_name
+                break
+        return cls(mido.open_ioport(matching_port), safe_adjust=safe_adjust, full_handshake=full_handshake, wake=wake)
 
     def wake_up(self, full_handshake: bool = False) -> None:
         """
