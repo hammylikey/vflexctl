@@ -1,6 +1,6 @@
 [project]
 name = "vflexctl"
-version = "0.2.0"
+version = "0.2.1"
 description = "Command line tool to set the output voltage for VFLEX devices"
 authors = [
     {name = "hameedm",email = "hameedm@protonmail.com"}
