@@ -6,7 +6,7 @@ from mido.ports import BaseOutput
 
 from vflexctl.types import MIDITriplet
 
-DEFAULT_PAUSE_LENGTH = 0.002
+DEFAULT_PAUSE_LENGTH = 0.020
 
 log = structlog.get_logger("vflexctl.midi_senders")
 
@@ -25,7 +25,7 @@ def send_sequence(output: BaseOutput, sequence: list[MIDITriplet]) -> None:
         send_triplet(output, command)
 
 
-def send_triplet(output: BaseOutput, triplet_data: MIDITriplet, *, pause: float = 0.002) -> None:
+def send_triplet(output: BaseOutput, triplet_data: MIDITriplet, *, pause: float = 0.020) -> None:
     """
     Send a single 3-byte MIDI message
     :param output: MIDI output to send the message to/through
