@@ -13,31 +13,31 @@ class VFlexProto:
     COMMAND_END: Final[MIDITriplet] = (0xA0, 0, 0)
     """End-of-frame marker."""
 
-    NOTE_STATUS: Final = 0x90
+    NOTE_STATUS: Final[int] = 0x90
     """Status byte for MIDI note-on messages encoding protocol nibbles."""
 
-    MIDI_CLOCK_HEARTBEAT: Final = (0xF8,)
+    MIDI_CLOCK_HEARTBEAT: Final[tuple[int]] = (0xF8,)
     """MIDI Clock command used as a heartbeat. The website sends this every ~6 seconds."""
 
-    CMD_GET_SERIAL_NUMBER: Final = 0x08  # 8
+    CMD_GET_SERIAL_NUMBER: Final[int] = 0x08  # 8
     """Protocol byte for the command to get the Serial Number."""
 
-    CMD_GET_HARDWARE_REVISION: Final = 0x0A
+    CMD_GET_HARDWARE_REVISION: Final[int] = 0x0A
     """Protocol byte for the command to get the Hardware Revision."""
 
-    CMD_GET_FIRMWARE_VERSION: Final = 0x0B
+    CMD_GET_FIRMWARE_VERSION: Final[int] = 0x0B
     """Protocol byte for the command to get the Firmware Version."""
 
-    CMD_GET_LED_STATE: Final = 0x0F  # 15
+    CMD_GET_LED_STATE: Final[int] = 0x0F  # 15
     """Protocol byte for the command to get the LED state."""
 
-    CMD_SET_LED_STATE: Final = CMD_GET_LED_STATE | 0x80
+    CMD_SET_LED_STATE: Final[int] = CMD_GET_LED_STATE | 0x80
     """Protocol byte for the command to set the LED state."""
 
-    CMD_GET_VOLTAGE: Final = 0x12  # 18
+    CMD_GET_VOLTAGE: Final[int] = 0x12  # 18
     """Protocol byte for the command to get Voltage"""
 
-    CMD_SET_VOLTAGE: Final = CMD_GET_VOLTAGE | 0x80
+    CMD_SET_VOLTAGE: Final[int] = CMD_GET_VOLTAGE | 0x80
     """Protocol byte for the command to set the Voltage."""
 
 
