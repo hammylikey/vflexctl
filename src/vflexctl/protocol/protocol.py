@@ -22,6 +22,12 @@ class VFlexProto:
     CMD_GET_SERIAL_NUMBER: Final = 0x08  # 8
     """Protocol byte for the command to get the Serial Number."""
 
+    CMD_GET_HARDWARE_REVISION: Final = 0x0A
+    """Protocol byte for the command to get the Hardware Revision."""
+
+    CMD_GET_FIRMWARE_VERSION: Final = 0x0B
+    """Protocol byte for the command to get the Firmware Version."""
+
     CMD_GET_LED_STATE: Final = 0x0F  # 15
     """Protocol byte for the command to get the LED state."""
 
