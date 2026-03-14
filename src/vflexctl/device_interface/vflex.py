@@ -120,7 +120,12 @@ class VFlex:
             if port_name.lower() == DEFAULT_PORT_NAME.lower():
                 matching_port = port_name
                 break
-        return cls(mido.open_ioport(matching_port), safe_adjust=safe_adjust, full_handshake=full_handshake, wake=wake)
+        return cls(
+            mido.open_ioport(matching_port or DEFAULT_PORT_NAME),
+            safe_adjust=safe_adjust,
+            full_handshake=full_handshake,
+            wake=wake,
+        )
 
     def wake_up(self, full_handshake: bool = False) -> None:
         """

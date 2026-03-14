@@ -54,3 +54,13 @@ def test_send_sequence_logs_sequence(mocker):
     senders.send_sequence(output, sequence)
 
     mock_log.info.assert_called_once_with("Sending MIDI Sequence", sequence=sequence)
+
+
+def test_send_triplet_uses_default_pause_length_when_not_explicitly_set(mocker):
+    output = mocker.MagicMock()
+    mock_sleep = mocker.patch.object(senders, "sleep")
+    triplet: MIDITriplet = (0x90, 0x00, 0x01)
+
+    senders.send_triplet(output, triplet)
+
+    mock_sleep.assert_any_call(senders.DEFAULT_PAUSE_LENGTH)
