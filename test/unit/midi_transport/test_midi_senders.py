@@ -2,6 +2,11 @@ from vflexctl.midi_transport import senders
 from vflexctl.types import MIDITriplet
 
 
+def test_default_pause_length_is_20ms():
+    """The default pause length should be 20ms (0.020 seconds)."""
+    assert senders.DEFAULT_PAUSE_LENGTH == 0.020
+
+
 def test_send_triplet_sends_single_midi_message(mocker):
     """send_triplet should build a MIDI message and send it once via the output port."""
     output = mocker.MagicMock()
