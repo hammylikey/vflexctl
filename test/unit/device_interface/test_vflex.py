@@ -29,6 +29,7 @@ def test_v_flex_runs_wakeup_with_expected_members(mock_io_port, wake_up_commands
     mocker.patch("vflexctl.device_interface.vflex.protocol_decode_serial_number", return_value="fooSerial")
     mocker.patch("vflexctl.device_interface.vflex.get_millivolts_from_protocol_message", return_value=5000)
     mocker.patch("vflexctl.device_interface.vflex.protocol_decode_led_state", return_value=False)
+    mocker.patch("vflexctl.device_interface.vflex.protocol_decode_firmware_version", return_value="APP.04.00.00")
     v_flex = VFlex(mock_io_port, safe_adjust=False)
     v_flex.wake_up = mocker.MagicMock(name="wake_up")
     getattr(v_flex, wake_up_commands, lambda: None)()
@@ -41,6 +42,7 @@ def test_v_flex_initialises_with_wake_up_as_expected(mocker, mock_io_port):
     mocker.patch("vflexctl.device_interface.vflex.protocol_decode_serial_number", return_value="fooSerial")
     mocker.patch("vflexctl.device_interface.vflex.get_millivolts_from_protocol_message", return_value=5000)
     mocker.patch("vflexctl.device_interface.vflex.protocol_decode_led_state", return_value=False)
+    mocker.patch("vflexctl.device_interface.vflex.protocol_decode_firmware_version", return_value="APP.04.00.00")
     v_flex = VFlex(mock_io_port, safe_adjust=False)
     v_flex.initial_wake_up()
     assert v_flex.current_voltage == 5000
@@ -55,6 +57,7 @@ def test_safe_adjust_guards_on_serial_number_changing(mocker, mock_io_port, mock
     )
     mocker.patch("vflexctl.device_interface.vflex.get_millivolts_from_protocol_message", return_value=5000)
     mocker.patch("vflexctl.device_interface.vflex.protocol_decode_led_state", return_value=False)
+    mocker.patch("vflexctl.device_interface.vflex.protocol_decode_firmware_version", return_value="APP.04.00.00")
     v_flex = VFlex(mock_io_port, safe_adjust=True)
     v_flex.wake_up()
     assert v_flex.serial_number == "fooSerial"
@@ -85,6 +88,7 @@ def test_set_voltage_guards_as_standard_if_the_voltage_changes(
     mocker.patch("vflexctl.device_interface.vflex.protocol_decode_serial_number", return_value="fooSerial")
     mocker.patch("vflexctl.device_interface.vflex.get_millivolts_from_protocol_message", return_value=5000)
     mocker.patch("vflexctl.device_interface.vflex.protocol_decode_led_state", return_value=False)
+    mocker.patch("vflexctl.device_interface.vflex.protocol_decode_firmware_version", return_value="APP.04.00.00")
     v_flex = VFlex(mock_io_port, safe_adjust=True)
     v_flex.initial_wake_up()
     assert v_flex.current_voltage == 5000
@@ -304,3 +308,45 @@ def test_mutation_of_full_handshake_with_the_functions(mocker):
             v_flex.use_quick_handshakes()
 
         assert v_flex.full_handshake == (count % 2 == 0)
+
+
+def test_firmware_version_is_correctly_separated(mocker):
+    mocker.patch("vflexctl.device_interface.vflex.mido.open_ioport")
+    mocker.MagicMock(name="ioport")
+    mock_drain_incoming = mocker.patch("vflexctl.device_interface.vflex.drain_incoming")
+
+    mock_drain_incoming.return_value = [  # This returns APP.04.03.00
+        (128, 0, 0),
+        (144, 0, 14),
+        (144, 0, 11),
+        (144, 4, 1),
+        (144, 5, 0),
+        (144, 5, 0),
+        (144, 2, 14),
+        (144, 3, 0),
+        (144, 3, 4),
+        (144, 2, 14),
+        (144, 3, 0),
+        (144, 3, 3),
+        (144, 2, 14),
+        (144, 3, 0),
+        (144, 3, 0),
+        (160, 0, 0),
+    ]
+    v_flex = VFlex.get_any()
+    v_flex.get_firmware_version()
+    assert v_flex.firmware_version == "APP.04.03.00"
+    assert v_flex.firmware_version_components == (4, 3, 0)
+
+
+@pytest.mark.parametrize(
+    ["firmware_version", "supports_scan"],
+    [
+        ("APP.04.03.00", False),
+        ("APP.05.00.00", True),
+    ],
+)
+def test_supports_pdo_scan_correctly_works_with_firmware(mocker, firmware_version, supports_scan):
+    v_flex = VFlex(mocker.MagicMock())
+    v_flex.firmware_version = firmware_version
+    assert v_flex.supports_pdo_scan == supports_scan

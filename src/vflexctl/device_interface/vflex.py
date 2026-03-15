@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from functools import wraps
+from functools import wraps, cached_property
 from typing import Self, TypeVar, ParamSpec, Concatenate, cast, Literal
 
 import mido
@@ -64,9 +64,6 @@ class VFlex:
 
     # Cached firmware version of the device (None until fetched).
     firmware_version: str | None = None
-
-    # Firmware version components, as APP.(1).(2).(3) by index
-    firmware_version_components: tuple[int, int, int] | None = None
 
     # Last known voltage in millivolts, retrieved from the device.
     current_voltage: int | None = None
@@ -309,8 +306,11 @@ class VFlex:
         self.firmware_version = protocol_decode_firmware_version(
             protocol_message_from_midi_messages(drain_incoming(self.io_port))
         )
+
+    @cached_property
+    def firmware_version_components(self) -> tuple[int, int, int]:
         split_version = self.firmware_version.split(".")[1:]
-        self.firmware_version_components = cast(tuple[int, int, int], tuple(int(x) for x in split_version))
+        return cast(tuple[int, int, int], tuple(int(x) for x in split_version))
 
     @run_with_handshake
     def _guard_voltage(self) -> None:
