@@ -23,6 +23,8 @@ def protocol_decode_hardware_revision(protocol_message: list[int]) -> str:
 
 
 def protocol_decode_firmware_version(protocol_message: list[int]) -> str:
+    if len(protocol_message) != 14:
+        raise InvalidProtocolMessageLengthError(protocol_message, 14)
     if protocol_message[1] != VFlexProto.CMD_GET_FIRMWARE_VERSION:
         raise IncorrectCommandByte(protocol_message, VFlexProto.CMD_GET_FIRMWARE_VERSION)
     return bytearray(protocol_message[2:]).decode()

@@ -1,12 +1,12 @@
 from collections.abc import Callable
 from functools import wraps
-from typing import Any, Self, TypeVar, ParamSpec, Concatenate, cast
-from typing import Literal
+from typing import Self, TypeVar, ParamSpec, Concatenate, cast, Literal
 
 import mido
 import structlog
 from mido.ports import BaseIOPort
 
+from vflexctl.command.hardware_info import get_firmware_version_command
 from vflexctl.command.led import set_led_state_command
 from vflexctl.command.voltage import set_voltage_command
 from vflexctl.device_interface.common_sequences import (
@@ -18,11 +18,16 @@ from vflexctl.exceptions import InvalidProtocolMessageLengthError, SerialNumberM
 from vflexctl.input_handler.voltage_convert import voltage_to_millivolt
 from vflexctl.midi_transport.receivers import drain_incoming
 from vflexctl.midi_transport.senders import send_sequence
-from vflexctl.protocol import protocol_message_from_midi_messages, prepare_command_frame, prepare_command_for_sending
+from vflexctl.protocol import (
+    protocol_message_from_midi_messages,
+    prepare_command_frame,
+    prepare_command_for_sending,
+)
 from vflexctl.protocol.coders import (
     get_millivolts_from_protocol_message,
     protocol_decode_led_state,
     protocol_decode_serial_number,
+    protocol_decode_firmware_version,
 )
 
 DEFAULT_PORT_NAME = "Werewolf vFlex"
@@ -56,6 +61,12 @@ class VFlex:
 
     # Cached serial number of the device (None until fetched).
     serial_number: str | None = None
+
+    # Cached firmware version of the device (None until fetched).
+    firmware_version: str | None = None
+
+    # Firmware version components, as APP.(1).(2).(3) by index
+    firmware_version_components: tuple[int, int, int] | None = None
 
     # Last known voltage in millivolts, retrieved from the device.
     current_voltage: int | None = None
@@ -135,6 +146,8 @@ class VFlex:
         :return: Nothing, but ensures that the device is ready to receive commands.
         """
         self.get_serial_number()
+        if self.firmware_version is None:
+            self.get_firmware_version()
         if full_handshake:
             self._initial_get_led_state()
             self._initial_get_voltage()
@@ -284,6 +297,21 @@ class VFlex:
         self.led_state = protocol_decode_led_state(protocol_message_from_midi_messages(returned_data))
         self.log.debug("LED State returned after setting", led_state=self.led_state)
 
+    def get_firmware_version(self) -> None:
+        """
+        Get the firmware version of the device.
+
+        :return: Nothing, but updates the firmware version for the object under self.firmware_version.
+        """
+        command = prepare_command_for_sending(prepare_command_frame(get_firmware_version_command()))
+        _ = drain_incoming(self.io_port)
+        send_sequence(self.io_port, command)
+        self.firmware_version = protocol_decode_firmware_version(
+            protocol_message_from_midi_messages(drain_incoming(self.io_port))
+        )
+        split_version = self.firmware_version.split(".")[1:]
+        self.firmware_version_components = cast(tuple[int, int, int], tuple(int(x) for x in split_version))
+
     @run_with_handshake
     def _guard_voltage(self) -> None:
         """
@@ -302,3 +330,12 @@ class VFlex:
     @property
     def led_state_str(self) -> str:
         return "always on" if self.led_state is False else "disabled during operation"
+
+    @property
+    def supports_pdo_scan(self) -> bool:
+        """
+        If the VFlex supports the "Power Delivery Objects" scan functionality introduced in APP.05.00.00
+
+        :return: True if the VFlex supports this, false otherwise.
+        """
+        return self.firmware_version_components[0] >= 5

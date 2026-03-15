@@ -2,7 +2,7 @@ from time import sleep
 
 import structlog
 from mido import Message
-from mido.ports import BaseOutput
+from mido.ports import BaseOutput, BaseIOPort
 
 from vflexctl.types import MIDITriplet
 
