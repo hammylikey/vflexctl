@@ -34,6 +34,11 @@ class VFlexProto:
     CMD_SET_LED_STATE: Final[int] = CMD_GET_LED_STATE | 0x80
     """Protocol byte for the command to set the LED state."""
 
+    CMD_GET_LED_COLOUR: Final[int] = 0x0D
+
+    CMD_SET_LED_COLOUR: Final[int] = CMD_GET_LED_COLOUR | 0x80
+    """Protocol byte for the command to set the LED colour."""
+
     CMD_GET_VOLTAGE: Final[int] = 0x12  # 18
     """Protocol byte for the command to get Voltage"""
 

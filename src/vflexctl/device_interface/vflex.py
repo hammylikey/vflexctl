@@ -7,14 +7,19 @@ import structlog
 from mido.ports import BaseIOPort
 
 from vflexctl.command.hardware_info import get_firmware_version_command
-from vflexctl.command.led import set_led_state_command
+from vflexctl.command.led import set_led_state_command, set_led_colour_command, LEDColour
 from vflexctl.command.voltage import set_voltage_command
 from vflexctl.device_interface.common_sequences import (
     GET_LED_STATE_SEQUENCE,
     GET_VOLTAGE_SEQUENCE,
     GET_SERIAL_NUMBER_SEQUENCE,
 )
-from vflexctl.exceptions import InvalidProtocolMessageLengthError, SerialNumberMismatchError, VoltageMismatchError
+from vflexctl.exceptions import (
+    InvalidProtocolMessageLengthError,
+    SerialNumberMismatchError,
+    VoltageMismatchError,
+    UnsupportedFirmwareVersionError,
+)
 from vflexctl.input_handler.voltage_convert import voltage_to_millivolt
 from vflexctl.midi_transport.receivers import drain_incoming
 from vflexctl.midi_transport.senders import send_sequence
@@ -309,7 +314,9 @@ class VFlex:
 
     @cached_property
     def firmware_version_components(self) -> tuple[int, int, int]:
-        split_version = self.firmware_version.split(".")[1:]
+        if not isinstance(self.firmware_version, str):
+            self.get_firmware_version()
+        split_version = cast(str, self.firmware_version).split(".")[1:]
         return cast(tuple[int, int, int], tuple(int(x) for x in split_version))
 
     @run_with_handshake
@@ -339,3 +346,21 @@ class VFlex:
         :return: True if the VFlex supports this, false otherwise.
         """
         return self.firmware_version_components[0] >= 5
+
+    @property
+    def supports_led_colour(self) -> bool:
+        return self.firmware_version_components[0] >= 5
+
+    def set_led_colour(self, led_colour: LEDColour) -> None:
+        """
+        Sets the LED colour on the connected VFlex. Currently, there doesn't seem to be documentation
+        or code that gets the current LED colour when checking
+        :param led_colour:
+        :return:
+        """
+        if not self.supports_led_colour:
+            raise UnsupportedFirmwareVersionError(self.firmware_version, "5.0.0")
+        command = prepare_command_for_sending(prepare_command_frame(set_led_colour_command(led_colour)))
+        _ = drain_incoming(self.io_port)
+        send_sequence(self.io_port, command)
+        return None
