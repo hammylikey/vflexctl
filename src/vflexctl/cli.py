@@ -1,4 +1,3 @@
-import sys
 from enum import StrEnum
 from functools import partial
 from typing import Callable
@@ -104,7 +103,7 @@ def set_v_flex_state(
     if all(x is None for x in [voltage, led, led_colour_option]):
         print("[bold]You should specify either a valid voltage or LED state to set.[/bold]")
         print(ctx.get_help())
-        sys.exit(1)
+        raise typer.Exit(1)
 
     context = _get_app_context()
     v_flex = _get_connected_v_flex(full_handshake=context.deep_adjust)

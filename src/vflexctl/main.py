@@ -1,5 +1,4 @@
 import logging
-import sys
 from importlib.metadata import version
 
 import structlog
@@ -27,7 +26,7 @@ def show_version(val: bool) -> None:
     if not val:
         return
     typer.echo(__version_str__)
-    sys.exit(0)
+    raise typer.Exit(0)
 
 
 @cli.callback(help=__version_str__)
