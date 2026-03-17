@@ -112,22 +112,22 @@ def set_v_flex_state(
     context = _get_app_context()
     v_flex = _get_connected_v_flex(full_handshake=context.deep_adjust)
     v_flex.initial_wake_up()
-    partials: list[Callable[[], None]] = []
+    adjustments: list[Callable[[], None]] = []
     message: list[str] = []
     if voltage is not None:
         message.append(f"Setting voltage to {decimal_normalise_voltage(voltage)}V")
-        partials.append(partial(v_flex.set_voltage_volts, voltage))
+        adjustments.append(partial(v_flex.set_voltage_volts, voltage))
     if led is not None:
         pre_msg = "Setting LED to "
         pre_msg += "be disabled during operation" if bool(led) else "always be on"
         message.append(pre_msg)
-        partials.append(partial(v_flex.set_led_state, bool(led)))
+        adjustments.append(partial(v_flex.set_led_state, bool(led)))
     if led_colour_option is not None:
         message.append(f"Setting LED colour to {led_colour_option}")
-        partials.append(partial(v_flex.set_led_colour, led_colour_option.to_led_colour()))
+        adjustments.append(partial(v_flex.set_led_colour, led_colour_option.to_led_colour()))
     print("\n".join(message))
 
-    for func in partials:
+    for func in adjustments:
         try:
             func()
         except Exception as e:
