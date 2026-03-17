@@ -364,3 +364,6 @@ class VFlex:
         _ = drain_incoming(self.io_port)
         send_sequence(self.io_port, command)
         return None
+
+    def __eq__(self, other):
+        return self.serial_number == other.serial_number

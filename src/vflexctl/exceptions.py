@@ -5,6 +5,7 @@ __all__ = [
     "UnsafeAdjustmentError",
     "SerialNumberMismatchError",
     "VoltageMismatchError",
+    "UnsupportedFirmwareVersionError",
 ]
 
 
@@ -74,7 +75,7 @@ class VoltageMismatchError(UnsafeAdjustmentError):
 
 
 class UnsupportedFirmwareVersionError(UnsafeAdjustmentError):
-    def __init__(self, firmware_version: str, required_version: str | None = None):
+    def __init__(self, firmware_version: str | None = None, required_version: str | None = None):
         msg = ["Unsupported firmware version for this adjustment."]
         if firmware_version is not None:
             msg.append(f"Firmware version: {firmware_version.upper().removeprefix("APP.")}")

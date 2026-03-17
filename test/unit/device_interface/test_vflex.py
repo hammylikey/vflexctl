@@ -1,11 +1,13 @@
 import pytest
 
+from vflexctl.command.led import LEDColour
 from vflexctl.device_interface import VFlex
 from vflexctl.device_interface import vflex as vflex_module
 from vflexctl.exceptions import (
     VoltageMismatchError,
     SerialNumberMismatchError,
     InvalidProtocolMessageLengthError,
+    UnsupportedFirmwareVersionError,
 )
 
 
@@ -340,13 +342,22 @@ def test_firmware_version_is_correctly_separated(mocker):
 
 
 @pytest.mark.parametrize(
-    ["firmware_version", "supports_scan"],
+    ["firmware_version", "feature", "supports_feature"],
     [
-        ("APP.04.03.00", False),
-        ("APP.05.00.00", True),
+        ("APP.04.03.00", "pdo_scan", False),
+        ("APP.05.00.00", "pdo_scan", True),
+        ("APP.04.03.00", "led_colour", False),
+        ("APP.05.00.00", "led_colour", True),
     ],
 )
-def test_supports_pdo_scan_correctly_works_with_firmware(mocker, firmware_version, supports_scan):
+def test_feature_support_properties(mocker, firmware_version, feature, supports_feature):
     v_flex = VFlex(mocker.MagicMock())
     v_flex.firmware_version = firmware_version
-    assert v_flex.supports_pdo_scan == supports_scan
+    assert getattr(v_flex, f"supports_{feature}", None) == supports_feature
+
+
+def test_setting_led_colour_on_old_firmware_raises(mocker):
+    v_flex = VFlex(mocker.MagicMock())
+    v_flex.firmware_version = "APP.04.03.00"
+    with pytest.raises(UnsupportedFirmwareVersionError):
+        v_flex.set_led_colour(LEDColour.RED)
