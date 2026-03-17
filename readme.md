@@ -33,6 +33,15 @@ You can set either your voltage, LED state (always on or not always on), or both
 vflexctl set -v <voltage> -l <always-on|disabled>
 ```
 
+On firmware >= 5.00.00, you can also set the led colour (this can be done in combination with the others):
+
+```python
+vflexctl set --led-colour/--led-color/--colour/--color ...
+```
+
+The difficulty with this is (at least, based on `lib.vflex.app`) that there is no way to read what the current
+LED colour flag is.
+
 ### Voltage
 
 Voltage is set with the `--voltage` or `-v` flag, with your volts as XX.XX. For example:
@@ -65,7 +74,7 @@ To set both voltage and LED state, use both flags (in any order).
 
 Since 0.2.0, the tool only sends a serial number request after the initial wake-up.
 This should work to set the voltage more quickly, but you can add this flag to be
-extra sure:
+extra sure (or if your VFlex becomes "gone" while adjusting):
 
 ```
 vflexctl --deep-adjust set -v 12
@@ -96,21 +105,18 @@ Hopefully the docstrings make sense, but to summarise:
 #### Properties
 
 - `io_port` - if you want to send MIDI directly, you can use this as a way to send messages
+- `firmware_version` - The version string from getting the firmware version (APP.XX.XX.XX)
+- `firmware_version_components` - The firmware version split into a three-integer tuple (`tuple[int, int, int]`)
 
 
 ## Current state
 
-This seems to be working. Setting values takes a bit longer than the web UI, since the
-tool performs a “startup dance” each time something is set (read serial, read LED,
-read voltage).
+This is working, and based on the informaton released now from `lib.vflex.app`, seems to have
+essentially been correct.
 
-~~An improvement could be to test if the setting works if it only reads the serial, and
-re-waking the device might not be needed since most operations are less than 5 seconds.~~
-Implemented since 0.2.0
-
-The assumption is that this works as long as you only have one device connected.
-Unless it becomes important, device selection adds more complexity than is currently
-needed.
+This still works with "one" connected VFlex. There's no guarantee that on subsequent runs
+the same VFlex will be adjusted. Multi-selection is currently not in scope, but if it's
+important, feel free to open an issue or, preferably, a PR.
 
 ## Developer info
 
@@ -120,6 +126,8 @@ a huge shift and poetry becomes terrible, please don't commit in a requirements.
 There are `black` rules for formatting in pyproject.toml as well - if your IDE formats on save, it (should)
 pick these up and format your files for you. The project also uses `mypy` for typing. Since this has a `py.typed`,
 you likely want to run `mypy .` and fix any typing issues before opening a PR or something.
+
+Add unit tests for things that you add in as well, even for something minor.
 
 Fork/pull/PR as you want!
 
