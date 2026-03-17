@@ -4,7 +4,7 @@ from typing import Callable
 
 import click
 import typer
-from rich import print
+from rich import print, console
 
 from vflexctl.command.led import LEDColour
 from vflexctl.context import AppContext
@@ -17,6 +17,7 @@ cli: typer.Typer = typer.Typer(name="vflexctl", no_args_is_help=True)
 
 
 VFLEX_MIDI_INTEGER_LIMIT = 65535
+stderr = console.Console(stderr=True)
 
 
 class LEDOption(StrEnum):
@@ -93,7 +94,7 @@ def set_v_flex_state(
     """
     if isinstance(voltage, float | int):
         if voltage > (VFLEX_MIDI_INTEGER_LIMIT - 1 / 1000):
-            print(
+            stderr.print(
                 "Voltage is being set higher than what can be transmitted. [bold red]The Voltage will not be set.[/bold red]"
             )
             voltage = None
@@ -101,9 +102,12 @@ def set_v_flex_state(
             print("Voltage is being set to 0, or negative. [bold red]The Voltage will not be set.[/bold red]")
             voltage = None
     if all(x is None for x in [voltage, led, led_colour_option]):
-        print("[bold]You should specify either a valid voltage or LED state to set.[/bold]")
+        stderr.print(
+            "[bold red]Error:[/bold red] Specify at least one of "
+            "[cyan]--voltage[/cyan], [cyan]--led[/cyan], or [cyan]--led-colour[/cyan]."
+        )
         print(ctx.get_help())
-        raise typer.Exit(1)
+        raise typer.Exit(code=1)
 
     context = _get_app_context()
     v_flex = _get_connected_v_flex(full_handshake=context.deep_adjust)
