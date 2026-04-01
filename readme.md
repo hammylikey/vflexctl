@@ -6,12 +6,18 @@ Why? I dunno, I like the idea of being able to work this without needing a websi
 
 ## Installation
 
-This requires that you have `pipx` installed on your system, using Python 3.12 or later.
+An easy way is to use `pipx` if it's installed on your system, using Python 3.12 or later.
 
 Using `pipx`, install this tool with:
 
 ```python
 pipx install vflexctl
+```
+
+You can also just use pip to install it - this then means invoking it with `python -m vflexctl` instead:
+
+```python
+pip3 install vflexctl
 ```
 
 ## Usage
