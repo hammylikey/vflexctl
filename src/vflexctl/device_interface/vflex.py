@@ -365,5 +365,5 @@ class VFlex:
         send_sequence(self.io_port, command)
         return None
 
-    def __eq__(self, other):
-        return self.serial_number == other.serial_number
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, VFlex) and self.serial_number == other.serial_number
