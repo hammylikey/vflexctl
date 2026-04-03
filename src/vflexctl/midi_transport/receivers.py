@@ -23,7 +23,7 @@ def drain_incoming(input_port: BaseInput, *, seconds: float = 0.5) -> list[MIDIT
         log.warning("Wait time was negative or 0 for draining incoming messages. They have not been drained.")
         return list()
     end_time = perf_counter() + seconds
-    drained_bytes: list[tuple[int, int, int]] = []
+    drained_bytes: list[MIDITriplet] = []
     while perf_counter() <= end_time:
         drained_bytes.extend(drain_once(input_port))
         sleep(0.002)
@@ -32,7 +32,7 @@ def drain_incoming(input_port: BaseInput, *, seconds: float = 0.5) -> list[MIDIT
     return drained_bytes
 
 
-def drain_once(input_port: BaseInput) -> list[tuple[int, int, int]]:
+def drain_once(input_port: BaseInput) -> list[MIDITriplet]:
     """
     "Drains" the MIDI input port for any midi messages currently available. Once
     the pipe is empty (when BaseInput.iter_pending() returns instead of yielding)
@@ -41,7 +41,7 @@ def drain_once(input_port: BaseInput) -> list[tuple[int, int, int]]:
     :param input_port: The MIDI input port to drain from
     :return: A list of MIDI message bytes
     """
-    drained_bytes: list[tuple[int, int, int]] = []
+    drained_bytes: list[MIDITriplet] = []
     for message in input_port.iter_pending():
         log.debug(
             "Drained input MIDI message",
