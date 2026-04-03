@@ -121,7 +121,9 @@ This is working, and based on the informaton released now from `lib.vflex.app`, 
 essentially been correct.
 
 This still works with "one" connected VFlex. There's no guarantee that on subsequent runs
-the same VFlex will be adjusted. Multi-selection is currently not in scope, but if it's
+the same VFlex will be adjusted if you have multiple connected.
+
+Multi-selection is currently not in scope, but if it's
 important, feel free to open an issue or, preferably, a PR.
 
 ## Developer info
