@@ -99,13 +99,12 @@ from vflexctl.device_interface import VFlex
 
 Hopefully the docstrings make sense, but to summarise:
 
-
 #### Methods
 
 - `get_any(cls, ...)` - This gets the first VFlex that matches the default MIDI port name ("Werewolf vFlex")
   - This is used by the CLI to get the connected VFlex
 - `with_io_name(cls, name: str, ...)` - This initialises a VFlex with a MIDO BaseIOPort using the provided name.
-    This is useful if you want to connect to a specific one and know what the port name is using `mido`. 
+  This is useful if you want to connect to a specific one and know what the port name is using `mido`. 
 - `initial_wake_up()` - run this to grab the serial number, and current LED state and Voltage
 
 #### Properties
@@ -114,10 +113,51 @@ Hopefully the docstrings make sense, but to summarise:
 - `firmware_version` - The version string from getting the firmware version (APP.XX.XX.XX)
 - `firmware_version_components` - The firmware version split into a three-integer tuple (`tuple[int, int, int]`)
 
+#### Other points on using `vflexctl` as a package
+
+`vflexctl` includes some custom types (such as `MIDITriplet` and `VFlexProtoMessage`) used in its type annotations.
+These are available for import from `vflexctl.types`.
+
+As a quick summary:
+
+- `MIDITriplet` — A three-integer tuple representing a single MIDI message
+- `VFlexProtoMessage` — A protocol-encoded message for controlling a VFlex device. To send this to a device, it must be converted into a list of `MIDITriplet`s
+
+## Comparison with the official tool
+
+Tundra Labs also provides a tool as part of their `lib.vflex.app` project.
+
+Both tools provide similar core functionality, but differ in setup and intended use.
+
+### Which should I use?
+
+- Use **vflexctl** if you want a **simple, reliable CLI with minimal setup**, or **Python bindings for automation/integration**
+- Use the **lib.vflex.app tool** if you are already working in a **JavaScript/Bun environment** or want tighter integration with their ecosystem
+
+### Overview
+
+| Area | vflexctl (Python) | lib.vflex.app tool (JavaScript) |
+|------|------------------|---------------------------------|
+| Installation | `pipx install vflexctl` | `bunx` / `npx` |
+| Runtime | Python >=3.12 | Bun or Node.js |
+| Usage model | CLI + importable package | Runtime-invoked tool |
+| Scriptability | Native Python | JS ecosystem |
+| Precision | Explicit (`Decimal`, controlled rounding) | Implementation-dependent |
+| Scope | Focused tool | Broader platform/tooling |
+
+### Notes
+
+- `vflexctl` installs as a persistent CLI, avoiding repeated runtime resolution (`bunx`/`npx`)
+- Designed to be both a CLI and a reusable Python library
+- Emphasises predictable behaviour (e.g. controlled voltage rounding)
+
+The lib.vflex.app tool is part of a broader ecosystem and may integrate more naturally with web-based workflows.
+
+`vflexctl` intentionally focuses on doing one thing well: providing a predictable, scriptable interface for controlling VFlex devices.
 
 ## Current state
 
-This is working, and based on the informaton released now from `lib.vflex.app`, seems to have
+This is working, and based on the information released now from `lib.vflex.app`, seems to have
 essentially been correct.
 
 This still works with "one" connected VFlex. There's no guarantee that on subsequent runs
@@ -128,10 +168,10 @@ important, feel free to open an issue or, preferably, a PR.
 
 ## Developer info
 
-This project uses poetry for managing dependenies and building, built with Python 3.12.10. Unless there's
+This project uses poetry for managing dependencies and building, built with Python 3.12.10. Unless there's
 a huge shift and poetry becomes terrible, please don't commit in a requirements.txt.
 
-There are `black` rules for formatting in pyproject.toml as well - if your IDE formats on save, it (should)
+There are `black` rules for formatting in `pyproject.toml` as well - if your IDE formats on save, it (should)
 pick these up and format your files for you. The project also uses `mypy` for typing. Since this has a `py.typed`,
 you likely want to run `mypy .` and fix any typing issues before opening a PR or something.
 
