@@ -28,6 +28,7 @@ def send_sequence(output: BaseOutput, sequence: list[MIDITriplet]) -> None:
 def send_triplet(output: BaseOutput, triplet_data: MIDITriplet, *, pause: float = DEFAULT_PAUSE_LENGTH) -> None:
     """
     Send a single 3-byte MIDI message
+
     :param output: MIDI output to send the message to/through
     :param triplet_data: The 3 bytes to send
     :param pause: The amount of time to pause before returning

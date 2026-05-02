@@ -25,6 +25,7 @@ def voltage_to_millivolt(voltage: float | int | str) -> int:
 def decimal_normalise_voltage(voltage: float | int | str) -> Decimal:
     """
     Takes in a voltage to any number of decimals, and converts it to a voltage to 2 decimal places.
+
     :param voltage: The voltage to normalise.
     :return: Decimal value, rounded to 2 decimal places.
     """
