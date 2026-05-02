@@ -35,8 +35,11 @@ def drain_incoming(input_port: BaseInput, *, seconds: float = 0.5) -> list[MIDIT
 def drain_once(input_port: BaseInput) -> list[MIDITriplet]:
     """
     "Drains" the MIDI input port for any midi messages currently available. Once
-    the pipe is empty (when BaseInput.iter_pending() returns instead of yielding)
+    the pipe is empty (when BaseInput.iter_pending() stops yielding messages)
     this returns.
+
+    Note that ``iter_pending()`` may return without yielding anything, so this
+    function can legitimately return an empty list.
 
     :param input_port: The MIDI input port to drain from
     :return: A list of MIDI message bytes
